@@ -7,6 +7,23 @@ import cellconstructor.Structure
 import numpy as np
 import sys, os
 
+# Conversion factor 1/(4pi eps0) * e^2 / 10^-10 -> my_units to  J 
+#                   1/(4pi eps0) * e / 10^-10   -> my_units to  eV
+__MYUNITS_TO_EV__ = 14.399645344793663
+
+        
+def convert_to_cc_structure(item):
+    """
+    Convert any structure (either ASE or Celconstructor) into a 
+    Cellconstructor Structure.
+    """
+    if isinstance(item, ase.Atoms):
+        ret = CC.Structure.Structure()
+        ret.generate_from_ase_atoms(item)
+        return ret
+    else:
+        return item
+
 class LongRangeInteractions(Calculator):
 
     def __init__(self, *args, **kwargs):
@@ -193,40 +210,104 @@ class LongRangeInteractions(Calculator):
 
         self.charge_coords = np.zeros( (structure.N_atoms*2, 3), dtype = np.double)
         self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / self.charges
+
+        self.u_disps = u_disps
+
         
-    def evaluate_forces(self):
+    def evaluate_energy_forces(self, structure):
         """
         Compute the forces of the charge system.
 
+        Parameters
+        ----------
+            structure : optional
+                If the structure on the supercell has not been fixed, it must be provided.
+
         Returns
         -------
+            energy : float
+                The value of the electrostatic energy
             forces : ndarray(size = (N_atoms, 3))
                 Return the long range forces
+            
         """
-        pass
+        assert self.is_initialized(), "Error, initialize the structure"
 
-    def get_electric_field(self, pos):
+        total_energy = 0
+        forces = np.zeros_like(self.u_disps)
+
+        for i in range(structure.N_atoms):
+            Efield = self.get_electric_field(self.fixed_supercell.coords[i, :] + .5 * self.u_disps[i, :], discard = i)
+
+            forces[i, :] =  Efield.dot( self.zeff[:, 3*i : 3*i+3])
+            total_energy += forces[i, :].dot(self.u_disps[i, :])
+        
+        total_energy *= __MYUNITS_TO_EV__
+        forces *= __MYUNITS_TO_EV__
+
+        return total_energy, forces
+
+
+    def get_electric_field(self, r, discard = None):
         """
         Get the electric field of a given position
+
+        Parameters
+        ----------
+            r : ndarray(size = 3)
+                The position in which you want the electric field
+            dicard : int or none
+                If int, the atom is discarded (but not its replica)
+        
+        Results
+        -------
+            E(r) : ndarray(size = 3)
+                The electric field in that position.
         """
-
-        # TODO: sum over the periodic replica
-
-        for i in range()
-
+        assert self.charges is not None, "Error, setup the charges before computing the electric field."
+        n = len(self.charges)
+        
+        # TODO: sum over the periodic replica ()
 
         
-def convert_to_cc_structure(item):
-    """
-    Convert any structure (either ASE or Celconstructor) into a 
-    Cellconstructor Structure.
-    """
-    if isinstance(item, ase.Atoms):
-        ret = CC.Structure.Structure()
-        ret.generate_from_ase_atoms(item)
-        return ret
-    else:
-        return item
+        new_mask = np.ones(n, dtype = bool)
+        if discard is not None: # Do this only in the first unit cell
+            # Discard the full dipole
+            new_mask[discard] = False
+            new_mask[discard + n//2] = False
+
+        new_n = np.sum(new_mask.astype(int))
+
+        disp = self.charge_coords[new_mask, :] - np.tile(r, (new_n, 1))
+        dist = np.sqrt(np.sum(disp**2, axis = 1))
+
+        q_over_dist = self.charges[new_mask] / dist**3
+
+        Efield = np.sum( disp.dot(self.dielectric_tensor) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
+
+        return Efield
+
+    def calculate(self, atoms=None, *args, **kwargs):
+        super().calculate(atoms, *args, **kwargs)
+
+        cc_struct = convert_to_cc_structure(atoms)
+        # Check if the unit cell differ from the fixed one
+        if self.fixed_supercell is None:
+            self.fix_supercell(cc_struct)
+        else:
+            # Check if the supercell is different
+            if np.max(np.abs(cc_struct.unit_cell - self.fixed_supercell.unit_cell)) > 1e-6:
+                self.fix_supercell(cc_struct)
+
+        # Setup the charges
+        self.setup_charges(cc_struct)
+
+        # Compute the energy and forces
+        energy, forces = self.evaluate_energy_forces()
+
+        self.results["energy"] = energy
+        self.results["forces"] = forces 
+        
 
 
 
