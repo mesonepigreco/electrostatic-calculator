@@ -44,7 +44,23 @@ class LongRangeInteractions(Calculator):
         # Integration details 
         self.cutoff = 60 # Angstrom
 
-        self.implemented_properties = ["energy", "forces", "stress"]
+        self.implemented_properties = ["energy", "forces"]#, "stress"]
+
+    def init_from_dyn(self, dyn, **kwargs):
+        """
+        It is possible to initialze the model directly from a quantum espresso dynamical matrix
+        containing the dielectric tensor and Born effective charges.
+
+        Parameters
+        ----------
+            dyn : CC.Phonons.Phonons()
+                The dynamical matrix. Must contain the dielectric tensor and the effective charges
+        """
+
+        assert dyn.dielectric_tensor is not None, "Error, the dynamical matrix has no dielectric tensor"
+        assert dyn.effective_charges is not None, "Error, the dynamical matrix has no effective charges"
+
+        self.init(dyn.structure, dyn.effective_charges, dyn.dielectric_tensor, **kwargs)
 
     def init(self, centroids, effective_charges, dieletric_tensor, **kwargs):
         """
@@ -83,6 +99,9 @@ class LongRangeInteractions(Calculator):
         
         # Change indices in a more convenient order
         self.zeff = np.einsum("abc -> bac", self.effective_charges).reshape((3, 3* self.centroids.N_atoms))
+
+        for key in kwargs:
+            self.__setattr__(key, kwargs[key])
 
 
     def is_initialized(self):
@@ -207,14 +226,15 @@ class LongRangeInteractions(Calculator):
         self.charges = np.zeros(structure.N_atoms * 2, dtype = np.double)
         self.charges[: structure.N_atoms] = np.einsum("aia -> i", new_zeff) / 3
         self.charges[structure.N_atoms:] = - self.charges[: structure.N_atoms]
-
+        
+        _q_ = np.tile(self.charges, (3,1)).T
         self.charge_coords = np.zeros( (structure.N_atoms*2, 3), dtype = np.double)
-        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / self.charges
+        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / _q_
 
         self.u_disps = u_disps
 
         
-    def evaluate_energy_forces(self, structure):
+    def evaluate_energy_forces(self):
         """
         Compute the forces of the charge system.
 
@@ -236,7 +256,7 @@ class LongRangeInteractions(Calculator):
         total_energy = 0
         forces = np.zeros_like(self.u_disps)
 
-        for i in range(structure.N_atoms):
+        for i in range(self.fixed_supercell.N_atoms):
             Efield = self.get_electric_field(self.fixed_supercell.coords[i, :] + .5 * self.u_disps[i, :], discard = i)
 
             forces[i, :] =  Efield.dot( self.zeff[:, 3*i : 3*i+3])
