@@ -229,7 +229,7 @@ class LongRangeInteractions(Calculator):
         
         _q_ = np.tile(self.charges, (3,1)).T
         self.charge_coords = np.zeros( (structure.N_atoms*2, 3), dtype = np.double)
-        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / _q_
+        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / _q_ * CC.Units.BOHR_TO_ANGSTROM
 
         self.u_disps = u_disps
 
