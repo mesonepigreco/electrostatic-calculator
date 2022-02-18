@@ -43,6 +43,7 @@ class LongRangeInteractions(Calculator):
 
         # Integration details 
         self.cutoff = 60 # Angstrom
+        self.eta = 6 # Angstrom
 
         self.implemented_properties = ["energy", "forces"]#, "stress"]
 
@@ -268,7 +269,7 @@ class LongRangeInteractions(Calculator):
         return total_energy, forces
 
 
-    def get_electric_field(self, r, discard = None):
+    def get_electric_field(self, r, discard = None, get_derivative = None):
         """
         Get the electric field of a given position
 
@@ -278,6 +279,9 @@ class LongRangeInteractions(Calculator):
                 The position in which you want the electric field
             dicard : int or none
                 If int, the atom is discarded (but not its replica)
+            get_derivative : int or none
+                If true, returns also the derivative of the electric field
+                with respect of the atomic coordinate given
         
         Results
         -------
@@ -301,11 +305,23 @@ class LongRangeInteractions(Calculator):
         disp = self.charge_coords[new_mask, :] - np.tile(r, (new_n, 1))
         dist = np.sqrt(np.sum(disp**2, axis = 1))
 
-        q_over_dist = self.charges[new_mask] / dist**3
+        q_inner_sphere = self.charges[new_mask] * (1 - np.exp(-dist / self.eta) * (1 + dist/self.eta + dist**2 / (2*self.eta**2)))
+        q_over_dist = q_inner_sphere / dist**3
+        
 
         Efield = np.sum( disp.dot(self.dielectric_tensor) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
 
+        if get_derivative is not None:
+            # TODO: to be finished (dist must be replaced with one with a single atom)
+            dEtilde_dr = (dist**3 + 3 * dist**2 *self.eta + 6*r*self.eta**2 + 6 *self.eta**3) / (2 * self.eta**3)
+            dEtilde_dr *= np.exp(- dist / self.eta)
+            dEtilde_dr -= 3
+            dEtilde_dr /= dist**4
+
+            dEtilde_dr = np.sum(dEtilde_dr)
+
         return Efield
+
 
     def calculate(self, atoms=None, *args, **kwargs):
         super().calculate(atoms, *args, **kwargs)

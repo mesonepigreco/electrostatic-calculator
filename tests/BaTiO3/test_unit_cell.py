@@ -1,3 +1,4 @@
+from unittest import BaseTestSuite
 import pyelectrostatic, pyelectrostatic.calculator as calc
 import sys, os
 import cellconstructor as CC, cellconstructor.Phonons
@@ -19,15 +20,20 @@ def test_unit_cell(plot = False):
 
     BaTiO3 = CC.Phonons.Phonons("BaTiO3_")
 
+    for i in range(BaTiO3.structure.N_atoms):
+        BaTiO3.effective_charges[i, :, :] = np.eye(3) * np.trace(BaTiO3.effective_charges[i, :, :]) / 3
+
     calculator = calc.LongRangeInteractions()
     calculator.init_from_dyn(BaTiO3)
+    calculator.dielectric_tensor[:,:] = np.eye(3)
 
     struct = BaTiO3.structure.copy()
+    struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
 
     # Move atom
     atm_id = 2
     direction = 0
-    delta = 0.05
+    delta = 0.01
     N_steps  = 50
 
     energies = np.zeros(N_steps, dtype = np.double)
@@ -35,6 +41,7 @@ def test_unit_cell(plot = False):
 
     xvalues = np.zeros(N_steps, dtype = np.double)
     ss = []
+    s_charges = []
     for i in range(N_steps):    
         struct.coords[atm_id, direction] += delta
         xvalues[i] = struct.coords[atm_id, direction]
@@ -42,10 +49,15 @@ def test_unit_cell(plot = False):
         atm = struct.get_ase_atoms()
         ss.append(atm)
         atm.set_calculator(calculator)
+        print("CHARGES:")
+        print(calculator.charge_values)
+        print(calculator.charge_coords)
         energies[i] = atm.get_total_energy()
         forces[i] = atm.get_forces()[atm_id, direction]
 
     if plot:
+        plt.plot(xvalues, energies, label = "Energy")
+        plt.figure()
         plt.plot(xvalues, -np.gradient(energies, delta), label = "Numerical diff")
         plt.plot(xvalues, forces, label = "Forces")
         plt.legend()
