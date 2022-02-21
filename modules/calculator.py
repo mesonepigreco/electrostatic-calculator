@@ -258,11 +258,17 @@ class LongRangeInteractions(Calculator):
 
         total_energy = 0
         forces = np.zeros_like(self.u_disps)
+        nat = forces.shape[0]
 
         for i in range(self.fixed_supercell.N_atoms):
-            Efield = self.get_electric_field(self.fixed_supercell.coords[i, :] + .5 * self.u_disps[i, :], discard = i)
+            r_middle = self.fixed_supercell.coords[i, :] + .5 * self.u_disps[i, :]
+            Efield = self.get_electric_field(r_middle)
+            Efield_diff = self.get_derivative_efield(r_middle)
 
-            forces[i, :] =  Efield.dot( self.zeff[:, 3*i : 3*i+3])
+            forces[i, :] +=  Efield.dot( self.zeff[:, 3*i : 3*i+3])
+
+            # Add the contribution of the derivative of all atoms with respect to the electric field
+            forces[:, :] += np.einsum("a, ba, cdb -> cd", self.u_disps[i, :], self.zeff[:, 3*i: 3*i+3], Efield_diff)
             total_energy += forces[i, :].dot(self.u_disps[i, :])
         
         total_energy *= __MYUNITS_TO_EV__
@@ -271,7 +277,7 @@ class LongRangeInteractions(Calculator):
         return total_energy, forces
 
 
-    def get_electric_field(self, r, discard = None, get_derivative = None):
+    def get_electric_field(self, r):
         """
         Get the electric field of a given position
 
@@ -279,11 +285,6 @@ class LongRangeInteractions(Calculator):
         ----------
             r : ndarray(size = 3)
                 The position in which you want the electric field
-            dicard : int or none
-                If int, the atom is discarded (but not its replica)
-            get_derivative : int or none
-                If true, returns also the derivative of the electric field
-                with respect of the atomic coordinate given
         
         Results
         -------
@@ -293,26 +294,19 @@ class LongRangeInteractions(Calculator):
         assert self.charges is not None, "Error, setup the charges before computing the electric field."
         n = len(self.charges)
         
-        # TODO: sum over the periodic replica ()
+        # TODO: sum over the periodic replica 
+        # It should only require to iterate the following code by adding to the disp vector
+        # a lattice vector
 
-        
-        new_mask = np.ones(n, dtype = bool)
-        if discard is not None: # Do this only in the first unit cell
-            # Discard the full dipole
-            new_mask[discard] = False
-            new_mask[discard + n//2] = False
-
-        new_n = np.sum(new_mask.astype(int))
-
-        disp = self.charge_coords[new_mask, :] - np.tile(r, (new_n, 1))
+        disp = self.charge_coords[:, :] - np.tile(r, (n, 1))
         dist = np.sqrt(np.sum(disp**2, axis = 1))
 
-        q_inner_sphere = self.charges[new_mask] * (1 - np.exp(-dist / self.eta) * (1 + dist/self.eta + dist**2 / (2*self.eta**2)))
+        q_inner_sphere = self.charges[:] * (scipy.special.erf(dist / (np.sqrt(2) * self.eta)) - \
+            np.sqrt(2) * dist * np.exp(- dist**2 / (2 * self.eta**2))/ (np.sqrt(np.pi) * self.eta) )
         q_over_dist = q_inner_sphere / dist**3
         
 
         Efield = np.sum( disp.dot( np.linalg.inv(self.dielectric_tensor)) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
-
 
         return Efield
 
@@ -345,7 +339,7 @@ class LongRangeInteractions(Calculator):
         dEtilde_dr_tmp = np.sqrt(2) * (r_mod**2 +3 * self.eta**2 ) * np.exp(-r_mod**2 / (2*self.eta**2)) / \
             (np.sqrt(np.pi * r_mod**3 * self.eta**3))
         dEtilde_dr_tmp -= 3 * scipy.special.erf(r_mod / (np.sqrt(2) * self.eta)) / r_mod**4
-        dEtilde_dr_tmp *= self.charge
+        dEtilde_dr_tmp *= self.charges
 
         # Get the modulus of the electric field
         E_modulus = scipy.special.erf(r_mod/ (np.sqrt(2) * self.eta)) - \
