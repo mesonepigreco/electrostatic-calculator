@@ -7,6 +7,8 @@ import cellconstructor.Structure
 import numpy as np
 import sys, os
 
+import scipy, scipy.special
+
 # Conversion factor 1/(4pi eps0) * e^2 / 10^-10 -> my_units to  J 
 #                   1/(4pi eps0) * e / 10^-10   -> my_units to  eV
 __MYUNITS_TO_EV__ = 14.399645344793663
@@ -309,18 +311,76 @@ class LongRangeInteractions(Calculator):
         q_over_dist = q_inner_sphere / dist**3
         
 
-        Efield = np.sum( disp.dot(self.dielectric_tensor) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
+        Efield = np.sum( disp.dot( np.linalg.inv(self.dielectric_tensor)) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
 
-        if get_derivative is not None:
-            # TODO: to be finished (dist must be replaced with one with a single atom)
-            dEtilde_dr = (dist**3 + 3 * dist**2 *self.eta + 6*r*self.eta**2 + 6 *self.eta**3) / (2 * self.eta**3)
-            dEtilde_dr *= np.exp(- dist / self.eta)
-            dEtilde_dr -= 3
-            dEtilde_dr /= dist**4
-
-            dEtilde_dr = np.sum(dEtilde_dr)
 
         return Efield
+
+    def get_derivative_efield(self, r):
+        """
+        Get the derivative of the electric field
+        ----------------------------------------
+
+        Parameters
+        ----------
+            r : ndarray(size = 3)
+                The Cartesian position on which to compute the value of the derivative of the electric field
+
+        Results
+        -------
+            dEk_dR_ij : ndarray(size = (nat, 3, 3))
+                The derivative of the electric field with respect to each atomic position.
+                The first two indices (nat, 3) indicates the atomic index and the Cartesian direction of the
+                atom which we derive. The last index (3) indicates the direction of the electric field. 
+        """
+
+        # TODO: add the sum over the periodic boundary conditions.
+        #       it should be sufficinet to add to the dist vector the lattice vector of the corresponding cell.
+        #       and simply sum the final results.
+        
+        # Get the electric field modulus derivative with respect to each modulus of r for each charge post
+        dist = r - self.charge_coords[:, :]
+        r_mod = np.linalg.norm(dist, axis = 1)
+
+        dEtilde_dr_tmp = np.sqrt(2) * (r_mod**2 +3 * self.eta**2 ) * np.exp(-r_mod**2 / (2*self.eta**2)) / \
+            (np.sqrt(np.pi * r_mod**3 * self.eta**3))
+        dEtilde_dr_tmp -= 3 * scipy.special.erf(r_mod / (np.sqrt(2) * self.eta)) / r_mod**4
+        dEtilde_dr_tmp *= self.charge
+
+        # Get the modulus of the electric field
+        E_modulus = scipy.special.erf(r_mod/ (np.sqrt(2) * self.eta)) - \
+            np.sqrt(2)*r_mod*np.exp(-r_mod**2/ (2*self.eta**2)) / (np.sqrt(np.pi) * self.eta)
+        E_modulus *= self.charges / r_mod**3
+
+
+        # Compose the first part of the derivative
+        r_over_r = np.einsum("ab, a -> ab", dist,  1/r_mod)
+        epsilon_r = np.einsum("bi, ai -> ab", np.linalg.inv(self.dielectric_tensor), dist)
+        dE_dr_first = np.einsum("a, ab, ac-> abc", dEtilde_dr_tmp, r_over_r, epsilon_r)
+
+        # Compose the second part
+        dE_dr_second = np.einsum("a, bc -> abc", E_modulus, np.linalg.inv(self.dielectric_tensor))
+
+        # Size (ncharges, 3, 3), last index electric field direction, middle the charge cartesian coordinate
+        dE_drtilde = dE_dr_first + dE_dr_second
+
+
+        # Now pass from derivative of charge coordinates into derivative of atomic positions
+        # Create a fake identity
+        nat = self.fixed_supercell.N_atoms
+        I = np.einsum("a,bc -> bac", np.ones(nat, dtype = np.double), np.eye(3))
+
+        # Build the Z/q with the correct shape
+        qravel = np.tile(self.charges[: nat], (3, 1)).T.ravel()
+        z_over_q = self.zeff / np.tile(qravel, (3,1))
+        z_over_q = z_over_q.reshape((3, nat, 3))
+
+        # Now convert the derivative of the charge position to the derivative of the atomic position
+        dE_dR_pos = -np.einsum("abc, dab -> adc", dE_drtilde[:nat], I + z_over_q)
+        dE_dR_pos += -np.einsum("abc, dab -> adc", dE_drtilde[nat:], I - z_over_q)
+
+        return dE_dR_pos
+
 
 
     def calculate(self, atoms=None, *args, **kwargs):
