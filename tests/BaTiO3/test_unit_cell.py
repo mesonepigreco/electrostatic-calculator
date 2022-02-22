@@ -37,6 +37,8 @@ def test_unit_cell(plot = False):
     N_steps  = 50
 
     energies = np.zeros(N_steps, dtype = np.double)
+    electric_field = np.zeros((N_steps, 3), dtype = np.double)
+    de_dr = np.zeros((N_steps, 3), dtype = np.double)
     forces = np.zeros(N_steps, dtype = np.double)
 
     xvalues = np.zeros(N_steps, dtype = np.double)
@@ -49,11 +51,15 @@ def test_unit_cell(plot = False):
         atm = struct.get_ase_atoms()
         ss.append(atm)
         atm.set_calculator(calculator)
-        print("CHARGES:")
-        print(calculator.charge_values)
-        print(calculator.charge_coords)
+
         energies[i] = atm.get_total_energy()
         forces[i] = atm.get_forces()[atm_id, direction]
+
+        electric_field[i,:] = calculator.get_electric_field(np.zeros(3))
+        de_dr[i, :] = calculator.get_derivative_efield(np.zeros(3))[atm_id, direction, :]
+        print("CHARGES:")
+        print(calculator.charges)
+        print(calculator.charge_coords)
 
     if plot:
         plt.plot(xvalues, energies, label = "Energy")
@@ -62,7 +68,16 @@ def test_unit_cell(plot = False):
         plt.plot(xvalues, forces, label = "Forces")
         plt.legend()
         plt.tight_layout()
-        ase.visualize.view(ss)
+        plt.figure()
+        plt.plot(xvalues, -np.gradient(electric_field[:,0], delta), label = "Numerical efield diff")
+        plt.plot(xvalues, de_dr[:, 0], label = "Anal efield diff") 
+        plt.legend()
+        plt.tight_layout()
+        plt.figure()
+        plt.plot(xvalues, electric_field[:,0], label = "E field")
+        plt.legend()
+        plt.tight_layout()
+        #ase.visualize.view(ss)
 
 
 if __name__ == "__main__":

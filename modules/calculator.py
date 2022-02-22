@@ -37,7 +37,7 @@ class LongRangeInteractions(Calculator):
         self.dielectric_tensor = None
 
         self.charge_coords = None
-        self.charge_values = None
+        self.charges = None
 
         # Fixed supercell is used if you know that all the supercell of a calculations are the same
         self.fixed_supercell = None
