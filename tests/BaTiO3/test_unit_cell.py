@@ -48,6 +48,7 @@ def test_unit_cell(plot = False):
     s_charges = np.zeros( (N_steps, 3 * nat, 3), dtype = np.double)
     s_force = np.zeros( (N_steps, 3 * nat, 3), dtype = np.double)
     asr = np.zeros(N_steps, dtype = np.double)
+    asr2 = np.zeros(N_steps, dtype = np.double)
     ss = []
 
     for i in range(N_steps):    
@@ -65,6 +66,8 @@ def test_unit_cell(plot = False):
 
         electric_field[i,:] = calculator.get_electric_field(np.zeros(3))
         de_dr[i, :] = calculator.get_derivative_efield(np.zeros(3))[atm_id, direction, :]
+
+        asr2[i] = np.linalg.norm( np.sum(calculator.u_disps, axis =0))
 
         print("CHARGES:")
         print(calculator.charges)
@@ -84,6 +87,7 @@ def test_unit_cell(plot = False):
         plt.tight_layout()
         plt.figure()
         plt.plot(xvalues, asr, label = "asr")
+        plt.plot(xvalues, asr2, label = "asr on displacements")
         plt.legend()
         plt.tight_layout()
         #ase.visualize.view(ss)
