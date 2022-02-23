@@ -277,7 +277,7 @@ class LongRangeInteractions(Calculator):
             Efield = self.get_electric_field(r_middle)
 
             # TODO: check the correct sign (seems a -) and the ASR, whcih is this term that does not satisfy it.
-            Efield_diff = self.get_derivative_efield(r_middle)    # Why the - sign here?????
+            Efield_diff = self.get_derivative_efield(r_middle, atom_deriv = i)    # Why the - sign here?????
 
             #print("CHARGES:", self.charge_coords)
             #print("R middle: {}\nE field: {}\nE field diff: {}".format(r_middle, Efield, Efield_diff))
@@ -300,7 +300,7 @@ class LongRangeInteractions(Calculator):
         return total_energy, forces
 
 
-    def get_electric_field(self, r, exclude_atom = None):
+    def get_electric_field(self, r, exclude_atom = None, verbose = False):
         """
         Get the electric field of a given position
 
@@ -335,10 +335,11 @@ class LongRangeInteractions(Calculator):
         # a lattice vector
 
         disp = np.tile(r, (new_n, 1)) - charge_coords
-        #print(" ------- ELECTRIC FIELD -------")
-        #print("   charge pos: {}".format(charge_coords))
-        #print("   r: {}".format(r))
-        #print("   charge displacement: {}".format(disp))
+        if verbose:
+            print(" ------- ELECTRIC FIELD -------")
+            print("   charge pos: {}".format(charge_coords))
+            print("   r: {}".format(r))
+            print("   charge displacement: {}".format(disp))
         dist = np.sqrt(np.sum(disp**2, axis = 1))
 
         q_inner_sphere = self.charges[:] * (scipy.special.erf(dist / (np.sqrt(2) * self.eta)) - \
@@ -348,7 +349,7 @@ class LongRangeInteractions(Calculator):
         q_over_dist = q_inner_sphere / dist**3
         #print("   q over dist: {}".format(q_over_dist))
 
-        epsilon_inv_r = disp.dot( np.linalg.inv(self.dielectric_tensor))
+        epsilon_inv_r = disp.dot( np.linalg.inv(self.dielectric_tensor).T)
         #print("   dist with tensor: {}".format(epsilon_inv_r))
         efield_contrib = epsilon_inv_r * np.tile(q_over_dist, (3, 1)).T
         #print("   E field contrib: {}".format(efield_contrib))
@@ -356,11 +357,12 @@ class LongRangeInteractions(Calculator):
 
         Efield = np.sum( efield_contrib, axis = 0)
 
-        #print("   e field: {}".format(Efield))
-        #print("--------- END FIELD ---------")
+        if verbose:
+            print("   e field: {}".format(Efield))
+            print("--------- END FIELD ---------")
         return Efield
 
-    def get_derivative_efield(self, r):
+    def get_derivative_efield(self, r, atom_deriv = None):
         """
         Get the derivative of the electric field
         ----------------------------------------
@@ -369,6 +371,9 @@ class LongRangeInteractions(Calculator):
         ----------
             r : ndarray(size = 3)
                 The Cartesian position on which to compute the value of the derivative of the electric field
+            atom_deriv : int
+                If provided, then it also add the contribution of the change in the r position due
+                to the derivative of the atom_deriv index
 
         Results
         -------
@@ -401,9 +406,11 @@ class LongRangeInteractions(Calculator):
         r_over_r = np.einsum("ab, a -> ab", dist,  1/r_mod)
         epsilon_r = np.einsum("bi, ai -> ab", np.linalg.inv(self.dielectric_tensor), dist)
         dE_dr_first = np.einsum("a, ab, ac-> abc", dEtilde_dr_tmp, r_over_r, epsilon_r)
+        # First index is the atom id, second index is the cartesian coordinate of the derivative
+        # last index is the electric field component
 
         # Compose the second part
-        dE_dr_second = np.einsum("a, bc -> abc", E_modulus, np.linalg.inv(self.dielectric_tensor))
+        dE_dr_second = np.einsum("a, cb -> abc", E_modulus, np.linalg.inv(self.dielectric_tensor))
 
         # Size (ncharges, 3, 3), last index electric field direction, middle the charge cartesian coordinate
         dE_drtilde = dE_dr_first + dE_dr_second
@@ -427,8 +434,15 @@ class LongRangeInteractions(Calculator):
         drcharge_dr[:nat, :,:,:] += np.einsum("aib, ij -> iajb", z_over_q, I_atms[:nat, :] - asr[:nat,:])
         drcharge_dr[nat:, :,:,:] -= np.einsum("aib, ij -> iajb", z_over_q, I_atms[:nat, :] - asr[:nat,:])
 
-        dE_dR_pos = np.einsum("iab, iajc-> jcb", dE_drtilde, drcharge_dr)
-
+        # The minus sign comes that dE_drtilde has a minus sign when we derive with respect to the charge position
+        dE_dR_pos = - np.einsum("iab, iajc-> jcb", dE_drtilde, drcharge_dr)
+        
+        # Now add the contribution if required to the derivative of the position on which the electric field is computed
+        if atom_deriv is not None:
+            dE_dr_target = np.sum(dE_drtilde, axis = 0)
+            dE_dR_pos[atom_deriv, :, :] += dE_dr_target / 2
+            for k in range(nat):
+                dE_dR_pos[k, :, :] += dE_dr_target / (2*nat)
 
         # Now pass from derivative of charge coordinates into derivative of atomic positions
         # Create a fake identity
