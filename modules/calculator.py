@@ -47,6 +47,9 @@ class LongRangeInteractions(Calculator):
         self.cutoff = 60 # Angstrom
         self.eta = 6 # Angstrom
 
+        self.u_disps = None
+        self.dipole_positions = None
+
         self.implemented_properties = ["energy", "forces"]#, "stress"]
 
     def init_from_dyn(self, dyn, **kwargs):
@@ -217,13 +220,22 @@ class LongRangeInteractions(Calculator):
             supercell, zeff = self.get_commensurate_supercell(structure)
             
         
-        # TODO add a flag to not assume the coordinate fixed in the cell position.
-        u_disps = supercell.coords - structure.coords
+        u_disps = - supercell.coords + structure.coords
+
+        # Remove a general displacement to consider the recentering of the supercell structure
+        nat = supercell.N_atoms
+        u_disps -= np.tile(np.sum(u_disps, axis = 0), (nat,1)) / nat
+        #print("DISPLACEMENTS:", u_disps)
+
+        # TODO: apply the ASR on u_disps by removing a general shift of all the atoms
 
         # If u_disp respect the cell, then also av_pos
-        av_pos = .5 * u_disps + structure.coords
+        av_pos = -.5 * u_disps + structure.coords
+        #print("AV position:", av_pos)
         new_zeff = np.reshape(zeff, (3, supercell.N_atoms, 3)) 
         dipole = np.einsum("abc, bc-> ab", new_zeff, u_disps).T  # Size (N_atoms, 3)
+
+        #print("Dipole: ", dipole)
 
         # Get the charges and their coordinates
         self.charges = np.zeros(structure.N_atoms * 2, dtype = np.double)
@@ -232,9 +244,9 @@ class LongRangeInteractions(Calculator):
         
         _q_ = np.tile(self.charges, (3,1)).T
         self.charge_coords = np.zeros( (structure.N_atoms*2, 3), dtype = np.double)
-        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / _q_ * CC.Units.BOHR_TO_ANGSTROM
-
+        self.charge_coords[:, :] = np.tile(av_pos, (2,1)) + np.tile(dipole, (2,1)) / (2 * _q_) 
         self.u_disps = u_disps
+        self.dipole_positions = av_pos.copy()
 
         
     def evaluate_energy_forces(self):
@@ -261,15 +273,26 @@ class LongRangeInteractions(Calculator):
         nat = forces.shape[0]
 
         for i in range(self.fixed_supercell.N_atoms):
-            r_middle = self.fixed_supercell.coords[i, :] + .5 * self.u_disps[i, :]
+            r_middle = self.dipole_positions[i, :]
             Efield = self.get_electric_field(r_middle)
-            Efield_diff = self.get_derivative_efield(r_middle)
 
-            forces[i, :] +=  Efield.dot( self.zeff[:, 3*i : 3*i+3])
+            # TODO: check the correct sign (seems a -) and the ASR, whcih is this term that does not satisfy it.
+            Efield_diff = self.get_derivative_efield(r_middle)    # Why the - sign here?????
+
+            #print("CHARGES:", self.charge_coords)
+            #print("R middle: {}\nE field: {}\nE field diff: {}".format(r_middle, Efield, Efield_diff))
+
+
+            E_dot_z = Efield.dot( self.zeff[:, 3*i : 3*i+3])
+            forces[i, :] +=  E_dot_z
+
+            # Remove the acustic sum rule contribution
+            forces[:,:] -= np.einsum("i, b->ib", np.ones(nat, dtype=np.double) / nat, E_dot_z)
 
             # Add the contribution of the derivative of all atoms with respect to the electric field
+            # THIS VIOLATES THE ACUSTIC SUM RULE AND HAS A NEGATIVE SIGN
             forces[:, :] += np.einsum("a, ba, cdb -> cd", self.u_disps[i, :], self.zeff[:, 3*i: 3*i+3], Efield_diff)
-            total_energy += forces[i, :].dot(self.u_disps[i, :])
+            total_energy -= Efield.dot( self.zeff[:, 3*i : 3*i+3]).dot(self.u_disps[i, :])
         
         total_energy *= __MYUNITS_TO_EV__
         forces *= __MYUNITS_TO_EV__
@@ -277,7 +300,7 @@ class LongRangeInteractions(Calculator):
         return total_energy, forces
 
 
-    def get_electric_field(self, r):
+    def get_electric_field(self, r, exclude_atom = None):
         """
         Get the electric field of a given position
 
@@ -285,6 +308,8 @@ class LongRangeInteractions(Calculator):
         ----------
             r : ndarray(size = 3)
                 The position in which you want the electric field
+            exclude_atom : int
+                If present, the charges produced by the given atom is not accounted
         
         Results
         -------
@@ -293,21 +318,46 @@ class LongRangeInteractions(Calculator):
         """
         assert self.charges is not None, "Error, setup the charges before computing the electric field."
         n = len(self.charges)
+
+        # Dipole has a self interaction between its two charges
+        # We need to exclude this interaction to avoid violating the ASR (no need actually)
+        good_mask =np.ones(n, dtype = bool)
+        if exclude_atom is not None:
+            good_mask[exclude_atom] = False
+            good_mask[exclude_atom + n//2] = False
+
+        charges = self.charges[good_mask]
+        charge_coords = self.charge_coords[good_mask]
+        new_n = np.sum(good_mask.astype(int))
         
         # TODO: sum over the periodic replica 
         # It should only require to iterate the following code by adding to the disp vector
         # a lattice vector
 
-        disp = self.charge_coords[:, :] - np.tile(r, (n, 1))
+        disp = np.tile(r, (new_n, 1)) - charge_coords
+        #print(" ------- ELECTRIC FIELD -------")
+        #print("   charge pos: {}".format(charge_coords))
+        #print("   r: {}".format(r))
+        #print("   charge displacement: {}".format(disp))
         dist = np.sqrt(np.sum(disp**2, axis = 1))
 
         q_inner_sphere = self.charges[:] * (scipy.special.erf(dist / (np.sqrt(2) * self.eta)) - \
             np.sqrt(2) * dist * np.exp(- dist**2 / (2 * self.eta**2))/ (np.sqrt(np.pi) * self.eta) )
+
+        #print("   q in sphere: {}".format(q_inner_sphere))
         q_over_dist = q_inner_sphere / dist**3
+        #print("   q over dist: {}".format(q_over_dist))
+
+        epsilon_inv_r = disp.dot( np.linalg.inv(self.dielectric_tensor))
+        #print("   dist with tensor: {}".format(epsilon_inv_r))
+        efield_contrib = epsilon_inv_r * np.tile(q_over_dist, (3, 1)).T
+        #print("   E field contrib: {}".format(efield_contrib))
         
 
-        Efield = np.sum( disp.dot( np.linalg.inv(self.dielectric_tensor)) * np.tile(q_over_dist, (3, 1)).T, axis = 0)
+        Efield = np.sum( efield_contrib, axis = 0)
 
+        #print("   e field: {}".format(Efield))
+        #print("--------- END FIELD ---------")
         return Efield
 
     def get_derivative_efield(self, r):
@@ -337,7 +387,7 @@ class LongRangeInteractions(Calculator):
         r_mod = np.linalg.norm(dist, axis = 1)
 
         dEtilde_dr_tmp = np.sqrt(2) * (r_mod**2 +3 * self.eta**2 ) * np.exp(-r_mod**2 / (2*self.eta**2)) / \
-            (np.sqrt(np.pi * r_mod**3 * self.eta**3))
+            (np.sqrt(np.pi) * r_mod**3 * self.eta**3)
         dEtilde_dr_tmp -= 3 * scipy.special.erf(r_mod / (np.sqrt(2) * self.eta)) / r_mod**4
         dEtilde_dr_tmp *= self.charges
 
@@ -359,19 +409,35 @@ class LongRangeInteractions(Calculator):
         dE_drtilde = dE_dr_first + dE_dr_second
 
 
-        # Now pass from derivative of charge coordinates into derivative of atomic positions
-        # Create a fake identity
+        # Create the derivative of the charges with respect to the atomic positions
+        I_coord = np.eye(3)
         nat = self.fixed_supercell.N_atoms
-        I = np.einsum("a,bc -> bac", np.ones(nat, dtype = np.double), np.eye(3))
+        I_atms = np.zeros((2*nat, nat), dtype = np.double)
+        I_atms[:nat, :] = np.eye(nat)
+        I_atms[nat:,:] = np.eye(nat)
+        asr =  np.ones((2*nat, nat), dtype=np.double) / nat
 
         # Build the Z/q with the correct shape
         qravel = np.tile(self.charges[: nat], (3, 1)).T.ravel()
-        z_over_q = self.zeff / np.tile(qravel, (3,1))
+        z_over_q = self.zeff / np.tile(2* qravel, (3,1))
         z_over_q = z_over_q.reshape((3, nat, 3))
 
+        I_full = np.einsum("ij, ab ->iajb", I_atms, I_coord)
+        drcharge_dr = I_full / np.double(2) + np.einsum("ab, ij -> iajb", I_coord/2, asr)
+        drcharge_dr[:nat, :,:,:] += np.einsum("aib, ij -> iajb", z_over_q, I_atms[:nat, :] - asr[:nat,:])
+        drcharge_dr[nat:, :,:,:] -= np.einsum("aib, ij -> iajb", z_over_q, I_atms[:nat, :] - asr[:nat,:])
+
+        dE_dR_pos = np.einsum("iab, iajc-> jcb", dE_drtilde, drcharge_dr)
+
+
+        # Now pass from derivative of charge coordinates into derivative of atomic positions
+        # Create a fake identity
+        #I = np.einsum("a,bc -> bac", np.ones(nat, dtype = np.double), np.eye(3))
+
+
         # Now convert the derivative of the charge position to the derivative of the atomic position
-        dE_dR_pos = -np.einsum("abc, dab -> adc", dE_drtilde[:nat], I + z_over_q)
-        dE_dR_pos += -np.einsum("abc, dab -> adc", dE_drtilde[nat:], I - z_over_q)
+        #dE_dR_pos = -np.einsum("abc, dab -> adc", dE_drtilde[:nat,:,:], I/2 + z_over_q)
+        #dE_dR_pos += -np.einsum("abc, dab -> adc", dE_drtilde[nat:,:,:], I/2 - z_over_q)
 
         return dE_dR_pos
 
