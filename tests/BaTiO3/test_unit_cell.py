@@ -12,6 +12,8 @@ def test_unit_cell(plot = False):
     Simple test to check if forces are derivatives of the energy
     """
 
+    np.random.seed(0)
+
     # Go in the directory of the script
     total_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(total_path)
@@ -45,6 +47,7 @@ def test_unit_cell(plot = False):
     xvalues = np.zeros(N_steps, dtype = np.double)
     s_charges = np.zeros( (N_steps, 3 * nat, 3), dtype = np.double)
     s_force = np.zeros( (N_steps, 3 * nat, 3), dtype = np.double)
+    asr = np.zeros(N_steps, dtype = np.double)
     ss = []
 
     for i in range(N_steps):    
@@ -57,6 +60,8 @@ def test_unit_cell(plot = False):
 
         energies[i] = atm.get_total_energy()
         forces[i] = atm.get_forces()[atm_id, direction]
+
+        asr[i] = np.linalg.norm( np.sum(atm.get_forces(), axis = 0))
 
         electric_field[i,:] = calculator.get_electric_field(np.zeros(3))
         de_dr[i, :] = calculator.get_derivative_efield(np.zeros(3))[atm_id, direction, :]
@@ -73,12 +78,12 @@ def test_unit_cell(plot = False):
         plt.legend()
         plt.tight_layout()
         plt.figure()
-        plt.plot(xvalues, -np.gradient(electric_field[:,0], delta), label = "Numerical efield diff")
+        plt.plot(xvalues, np.gradient(electric_field[:,0], delta), label = "Numerical efield diff")
         plt.plot(xvalues, de_dr[:, 0], label = "Anal efield diff") 
         plt.legend()
         plt.tight_layout()
         plt.figure()
-        plt.plot(xvalues, electric_field[:,0], label = "E field")
+        plt.plot(xvalues, asr, label = "asr")
         plt.legend()
         plt.tight_layout()
         #ase.visualize.view(ss)
