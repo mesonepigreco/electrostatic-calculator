@@ -142,6 +142,8 @@ def test_one_atom_model(plot = False):
         print(calculator.charges)
         print(calculator.charge_coords)
 
+    #assert np.max(np.abs(forces[1:-1] + np.gradient(energies, delta)[1:-1])) < 1e-6
+
 
     if plot:
         plt.plot(xvalues, energies, label = "Energy")
@@ -162,5 +164,5 @@ def test_one_atom_model(plot = False):
 
 if __name__ == "__main__":
     test_unit_cell(plot = True)
-    test_one_atom_model(plot = True)
+    #test_one_atom_model(plot = True)
     plt.show()
