@@ -46,6 +46,8 @@ class LongRangeInteractions(Calculator):
 
         # Integration details 
         self.eta = 6 # Angstrom
+        self.cutoff = 60 # Angstrom (cutoff for the PBC)
+        self.use_pbc = True
 
         self.u_disps = None
         self.dipole_positions = None
@@ -194,6 +196,9 @@ class LongRangeInteractions(Calculator):
             new_structure = supercell_structure
 
         self.fixed_supercell, self.fixed_zeff = self.get_commensurate_supercell(new_structure)
+
+        if self.use_pbc:
+            self.setup_pbc(self.cutoff)
     
     def unfix_supercell(self):
         """
@@ -209,7 +214,7 @@ class LongRangeInteractions(Calculator):
         The cutoff is set so that in the charge summation only
         lattice vectors smaller than the cutoff are included.
 
-        NOTE: The structure must be initialized
+        NOTE: The structure must be initialized and the supercell fixed.
 
         Parameters
         ----------
@@ -226,7 +231,7 @@ class LongRangeInteractions(Calculator):
 
         assert self.is_initialized(), "Error, initialize the calculator before setting periodic boundary conditions"
 
-        cell = self.centroids.unit_cell.copy()
+        cell = self.fixed_supercell.unit_cell.copy()
 
         lattice_length = np.linalg.norm(cell, axis = 1)
         
@@ -540,7 +545,7 @@ class LongRangeInteractions(Calculator):
         super().calculate(atoms, *args, **kwargs)
 
         cc_struct = convert_to_cc_structure(atoms)
-        # Check if the unit cell differ from the fixed one
+        # TODO: Check if the unit cell differ from the fixed one
         if self.fixed_supercell is None:
             self.fix_supercell(cc_struct)
         else:
