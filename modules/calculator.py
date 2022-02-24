@@ -46,7 +46,7 @@ class LongRangeInteractions(Calculator):
 
         # Integration details 
         self.eta = 6 # Angstrom
-        self.cutoff = 60 # Angstrom (cutoff for the PBC)
+        self.cutoff = 20 # Angstrom (cutoff for the PBC)
         self.use_pbc = True
 
         self.u_disps = None
@@ -119,6 +119,17 @@ class LongRangeInteractions(Calculator):
         if self.effective_charges is None or self.centroids.N_atoms < 1 or self.dielectric_tensor is None:
             return False
         return True
+
+    def reset_cutoff(self, cutoff):
+        """
+        Reset the cutoff without changing the structure.
+        """
+        self.cutoff = cutoff
+
+        if self.fixed_supercell is not None:
+            self.atoms = None
+            self.setup_pbc(self.cutoff)
+
 
     def get_commensurate_supercell(self, supercell_structure, max_cell_value = 100):
         """
@@ -197,6 +208,9 @@ class LongRangeInteractions(Calculator):
 
         self.fixed_supercell, self.fixed_zeff = self.get_commensurate_supercell(new_structure)
 
+        # Clear eventual previous data
+        self.atoms = None
+
         if self.use_pbc:
             self.setup_pbc(self.cutoff)
     
@@ -230,13 +244,14 @@ class LongRangeInteractions(Calculator):
         """
 
         assert self.is_initialized(), "Error, initialize the calculator before setting periodic boundary conditions"
+        assert cutoff >= 0, "Error, the cutoff must be positive (or 0 to avoid PBC), {} provided".format(cutoff)
 
         cell = self.fixed_supercell.unit_cell.copy()
 
         lattice_length = np.linalg.norm(cell, axis = 1)
         
         # Decide the maximum supercell on which
-        n_len = (lattice_length / cutoff + 1).astype(int)
+        n_len = (cutoff / lattice_length + 1).astype(int)
         n_len[0] = int(n_len[0] * r_x + .5)
         n_len[1] = int(n_len[1] * r_y + .5)
         n_len[2] = int(n_len[2] * r_z + .5)
@@ -249,6 +264,7 @@ class LongRangeInteractions(Calculator):
 
         # Combine all the vectors in one big array with all combinations
         all_vectors = np.stack(np.meshgrid(_x_, _y_, _z_), -1).reshape(-1,3)
+        print("PBC pre:", all_vectors.shape)
 
         # Extract the cartesian components of the lattice vectors
         cartesian_vectors = CC.Methods.cryst_to_cart(cell, all_vectors)
@@ -257,7 +273,9 @@ class LongRangeInteractions(Calculator):
         vect_lengths = np.linalg.norm(cartesian_vectors, axis = 1)
 
         # Store only the vectors smaller than the given cutoff
-        self.lattice_vectors = all_vectors[vect_lengths < cutoff, :]
+        self.lattice_vectors = all_vectors[vect_lengths <= cutoff, :]
+
+        print("PBC: ", self.lattice_vectors.shape)
 
 
 
@@ -344,7 +362,7 @@ class LongRangeInteractions(Calculator):
             #print("R middle: {}\nE field: {}\nE field diff: {}".format(r_middle, Efield, Efield_diff))
 
 
-            E_dot_z = Efield.dot( self.zeff[:, 3*i : 3*i+3])
+            E_dot_z = Efield.dot( self.fixed_zeff[:, 3*i : 3*i+3])
             forces[i, :] +=  E_dot_z
 
             # Remove the acustic sum rule contribution
@@ -352,8 +370,8 @@ class LongRangeInteractions(Calculator):
 
             # Add the contribution of the derivative of all atoms with respect to the electric field
             # THIS VIOLATES THE ACUSTIC SUM RULE AND HAS A NEGATIVE SIGN
-            forces[:, :] += np.einsum("a, ba, cdb -> cd", self.u_disps[i, :], self.zeff[:, 3*i: 3*i+3], Efield_diff)
-            total_energy -= Efield.dot( self.zeff[:, 3*i : 3*i+3]).dot(self.u_disps[i, :])
+            forces[:, :] += np.einsum("a, ba, cdb -> cd", self.u_disps[i, :], self.fixed_zeff[:, 3*i: 3*i+3], Efield_diff)
+            total_energy -= Efield.dot( self.fixed_zeff[:, 3*i : 3*i+3]).dot(self.u_disps[i, :])
         
         total_energy *= __MYUNITS_TO_EV__
         forces *= __MYUNITS_TO_EV__
@@ -385,7 +403,7 @@ class LongRangeInteractions(Calculator):
         if verbose:
             print("Using {} replicas".format(n_replica))
 
-        total_Efield = 0
+        total_Efield = np.zeros(3, dtype = np.double)
         
         for jrep in range(n_replica):
             r_lattice = CC.Methods.cryst_to_cart(self.fixed_supercell.unit_cell, self.lattice_vectors[jrep, :])
@@ -508,7 +526,7 @@ class LongRangeInteractions(Calculator):
 
             # Build the Z/q with the correct shape
             qravel = np.tile(self.charges[: nat], (3, 1)).T.ravel()
-            z_over_q = self.zeff / np.tile(2* qravel, (3,1))
+            z_over_q = self.fixed_zeff / np.tile(2* qravel, (3,1))
             z_over_q = z_over_q.reshape((3, nat, 3))
 
             I_full = np.einsum("ij, ab ->iajb", I_atms, I_coord)

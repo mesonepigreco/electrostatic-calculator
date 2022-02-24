@@ -9,25 +9,21 @@ import matplotlib.pyplot as plt
 
 
 def test_total_translation(plot = False):
-    
-
     np.random.seed(0)
 
     # Go in the directory of the script
     total_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(total_path)
 
-    
-
     BaTiO3 = CC.Phonons.Phonons("BaTiO3_")
     nat = BaTiO3.structure.N_atoms
 
-    for i in range(BaTiO3.structure.N_atoms):
-        BaTiO3.effective_charges[i, :, :] = np.eye(3) * np.trace(BaTiO3.effective_charges[i, :, :]) / 3
+    #for i in range(BaTiO3.structure.N_atoms):
+    #    BaTiO3.effective_charges[i, :, :] = np.eye(3) * np.trace(BaTiO3.effective_charges[i, :, :]) / 3
 
     calculator = calc.LongRangeInteractions()
     calculator.init_from_dyn(BaTiO3)
-    calculator.dielectric_tensor[:,:] = np.eye(3)
+    #calculator.dielectric_tensor[:,:] = np.eye(3)
 
     struct = BaTiO3.structure.copy()
     struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
@@ -117,7 +113,7 @@ def test_unit_cell(plot = False):
 
     calculator = calc.LongRangeInteractions()
     calculator.init_from_dyn(BaTiO3)
-    calculator.dielectric_tensor[:,:] = np.eye(3)
+    #calculator.dielectric_tensor[:,:] = np.eye(3)
 
     struct = BaTiO3.structure.copy()
     struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
@@ -158,10 +154,7 @@ def test_unit_cell(plot = False):
 
         asr2[i] = np.linalg.norm( np.sum(calculator.u_disps, axis =0))
 
-        print("CHARGES:")
-        print(calculator.charges)
-        print(calculator.charge_coords)
-
+        
     if plot:
         plt.plot(xvalues, energies, label = "Energy")
         plt.figure()
