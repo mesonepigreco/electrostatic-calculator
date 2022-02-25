@@ -57,6 +57,8 @@ class LongRangeInteractions(Calculator):
 
         self.implemented_properties = ["energy", "forces"]#, "stress"]
 
+        self.use_cache = True
+
     def init_from_dyn(self, dyn, **kwargs):
         """
         It is possible to initialze the model directly from a quantum espresso dynamical matrix
@@ -561,6 +563,7 @@ class LongRangeInteractions(Calculator):
 
     def calculate(self, atoms=None, *args, **kwargs):
         super().calculate(atoms, *args, **kwargs)
+        self.atoms = atoms
 
         cc_struct = convert_to_cc_structure(atoms)
         # TODO: Check if the unit cell differ from the fixed one
