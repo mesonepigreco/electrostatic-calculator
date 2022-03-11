@@ -55,7 +55,11 @@ class LongRangeInteractions(Calculator):
         # Sum of periodic boundary conditions
         self.lattice_vectors = np.zeros((1, 3), dtype = np.int)
 
-        self.implemented_properties = ["energy", "forces"]#, "stress"]
+        # Check wether the get_dipole function
+        # returns the dipole from the effective charges or from the fake charges
+        self.dipole_from_effective_charge = False
+
+        self.implemented_properties = ["energy", "forces", "dipole"]#, "stress"]
 
         self.use_cache = True
 
@@ -329,6 +333,26 @@ class LongRangeInteractions(Calculator):
         self.u_disps = u_disps
         self.dipole_positions = av_pos.copy()
 
+
+    def get_dipole(self):
+        """
+        COMPUTE DIPOLE MOMENT
+        =====================
+
+        Use the electrostatic model to compute the dipole moment.
+        This should match the effective charges times the displacement.
+        Note that the structure and the charge system must already be initialized
+        """
+
+        assert self.is_initialized()
+
+        if not self.dipole_from_effective_charge:
+            return np.einsum("ia, i", self.charge_coords, self.charges)
+        
+        dipole = self.zeff.dot(self.u_disps.ravel())
+        return dipole
+
+
         
     def evaluate_energy_forces(self):
         """
@@ -581,7 +605,8 @@ class LongRangeInteractions(Calculator):
         energy, forces = self.evaluate_energy_forces()
 
         self.results["energy"] = energy
-        self.results["forces"] = forces 
+        self.results["forces"] = forces
+        self.results["dipole"] = self.get_dipole() 
         
 
 
