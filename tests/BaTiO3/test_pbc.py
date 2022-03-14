@@ -38,7 +38,7 @@ def test_pbc(plot = False):
 
     energies = np.zeros((N_STEPS,3), dtype = np.double)
     #forces = np.zeros(N_steps, dtype = np.double)
-    cutoff = np.linspace(5, 30, N_STEPS)
+    cutoff = np.linspace(2, 30, N_STEPS)
     
     for i, cut in enumerate(cutoff):
         calculator.reset_cutoff(cut)
@@ -63,7 +63,7 @@ def test_pbc(plot = False):
         plt.rcParams["font.family"] = 'Liberation Serif'
         plt.plot(cutoff, energies[:,0], label = 'unit cell', color = 'k', ls = 'solid')
         plt.plot(cutoff, energies[:,1], ls = 'dashed', color = 'red', label = '2x2x2 cell')
-        plt.plot(cutoff, energies[:,2], ls = 'dashed', color = 'red', label = '3x3x3 cell')
+        plt.plot(cutoff, energies[:,2], ls = '-.', color = 'green', label = '3x3x3 cell')
         plt.legend()
         plt.xlabel('Cutoff [A]', fontsize = LBL_FS)
         plt.ylabel('Total energy [eV]', fontsize = LBL_FS)

@@ -13,7 +13,7 @@ import scipy, scipy.special
 # Conversion factor 1/(4pi eps0) * e^2 / 10^-10 -> my_units to  J 
 #                   1/(4pi eps0) * e / 10^-10   -> my_units to  eV
 __MYUNITS_TO_EV__ = 14.399645344793663
-
+__EPSILON__ = 1e-8
         
 def convert_to_cc_structure(item):
     """
@@ -36,6 +36,9 @@ class LongRangeInteractions(Calculator):
         self.centroids = CC.Structure.Structure()
         self.effective_charges = None
         self.dielectric_tensor = None
+
+        # If true, stores the results of energy and forces into the directory
+        self.debug = False
 
         self.charge_coords = None
         self.charges = None
@@ -438,6 +441,10 @@ class LongRangeInteractions(Calculator):
 
             #print("   q in sphere: {}".format(q_inner_sphere))
             q_over_dist = q_inner_sphere / dist**3
+
+            # We know the r->0 limit is
+            zero_dist_mask = dist < __EPSILON__
+            q_over_dist[zero_dist_mask] = np.sqrt(2 / np.pi) * self.charges[zero_dist_mask] / (3 * self.eta**3)
             #print("   q over dist: {}".format(q_over_dist))
 
             epsilon_inv_r = disp.dot( np.linalg.inv(self.dielectric_tensor).T)
@@ -493,20 +500,29 @@ class LongRangeInteractions(Calculator):
             # Get the electric field modulus derivative with respect to each modulus of r for each charge post
             dist = r - self.charge_coords[:, :] - np.tile(r_lattice, (nat*2, 1))
             r_mod = np.linalg.norm(dist, axis = 1)
+            almost_zero = r_mod < __EPSILON__
 
             dEtilde_dr_tmp = np.sqrt(2) * (r_mod**2 +3 * self.eta**2 ) * np.exp(-r_mod**2 / (2*self.eta**2)) / \
                 (np.sqrt(np.pi) * r_mod**3 * self.eta**3)
             dEtilde_dr_tmp -= 3 * scipy.special.erf(r_mod / (np.sqrt(2) * self.eta)) / r_mod**4
             dEtilde_dr_tmp *= self.charges
 
+            # Use the correct limit
+            dEtilde_dr_tmp[almost_zero] = 0
+            
+
             # Get the modulus of the electric field
             E_modulus = scipy.special.erf(r_mod/ (np.sqrt(2) * self.eta)) - \
                 np.sqrt(2)*r_mod*np.exp(-r_mod**2/ (2*self.eta**2)) / (np.sqrt(np.pi) * self.eta)
             E_modulus *= self.charges / r_mod**3
+            # The correct r->0 limit
+            E_modulus[almost_zero] = np.sqrt(2 / np.pi) * self.charges[almost_zero] / (3 * self.eta**3)
 
 
             # Compose the first part of the derivative
             r_over_r = np.einsum("ab, a -> ab", dist,  1/r_mod)
+            r_over_r[almost_zero,:] = 0
+            
             epsilon_r = np.einsum("bi, ai -> ab", np.linalg.inv(self.dielectric_tensor), dist)
             dE_dr_first = np.einsum("a, ab, ac-> abc", dEtilde_dr_tmp, r_over_r, epsilon_r)
             # First index is the atom id, second index is the cartesian coordinate of the derivative
@@ -566,6 +582,8 @@ class LongRangeInteractions(Calculator):
         self.atoms = atoms
 
         cc_struct = convert_to_cc_structure(atoms)
+
+
         # TODO: Check if the unit cell differ from the fixed one
         if self.fixed_supercell is None:
             self.fix_supercell(cc_struct)
@@ -582,6 +600,13 @@ class LongRangeInteractions(Calculator):
 
         self.results["energy"] = energy
         self.results["forces"] = forces 
+
+        # Just save the structure if debug into the directory
+        if self.debug:
+            cc_struct.save_scf(self.label + '.scf')
+            np.savetxt(self.label + '_results.txt', forces, header = ' energy = {} eV'.format(energy))
+            
+
         
 
 
