@@ -9,7 +9,7 @@ import sys, os
 
 class FourierCalculator(ase.calculators.calculator.Calculator):
     def __init__(self, *args, **kwargs):
-        ase.calulators.calculator.Calculator.__init__(self, *args, **kargs)
+        ase.calculators.calculator.Calculator.__init__(self, *args, **kwargs)
 
         self.centroids = None
         self.tensor = None 
@@ -21,6 +21,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         self.nac_fc = None
 
         self.results = {}
+        self.implemented_properties = ["energy", "forces"]
 
     def is_initialized(self):
         """
@@ -63,7 +64,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
             if np.max(np.abs(q)) > 1e-6:
                 self.dynq[iq, :, :] = - self.tensor.Interpolate(-q)
         
-        self.fc = CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroid, self.fixed_supercell_structure)
+        self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.fixed_supercell_structure))
 
 
 
@@ -82,7 +83,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         forces = -self.fc.dot(u_disps.ravel()).reshape((nat_sc, 3))
 
         # Energy in Ry
-        energy = - forces.dot(u_disps)
+        energy = - forces.ravel().dot(u_disps.ravel()) / 2
 
         self.results["forces"] = forces * CC.Units.RY_TO_EV / CC.Units.BOHR_TO_ANGSTROM
         self.results["energy"] = energy * CC.Units.RY_TO_EV
@@ -92,7 +93,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         This is the actual function called by the ASE calculator.
         """
 
-        ase.calulators.calculator.Calculator.calculate(self, atoms, *args, **kwargs)
+        ase.calculators.calculator.Calculator.calculate(self, atoms, *args, **kwargs)
 
         cc_struct = calculator.convert_to_cc_structure(atoms)
 
