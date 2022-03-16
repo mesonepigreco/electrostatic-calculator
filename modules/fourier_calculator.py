@@ -2,6 +2,7 @@ import cellconstructor as CC, cellconstructor.Phonons
 import cellconstructor.ForceTensor
 
 import ase, ase.calculators, ase.calculators.calculator
+import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 import numpy as np
 import sys, os
@@ -91,22 +92,23 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         This is the actual function called by the ASE calculator.
         """
 
-        ase.calulators.calculator.Calculator.calculate(self, atoms, *args, **kargs)
+        ase.calulators.calculator.Calculator.calculate(self, atoms, *args, **kwargs)
 
-        cc_struct = pyelectrostatic.calculator.convert_to_cc_structure(atoms)
+        cc_struct = calculator.convert_to_cc_structure(atoms)
 
         # Initialize the supercell if not already done.
-        if self.fixed_supercell is None:
+        # TODO: check what happens if the atoms are ordered in a different way.
+        if self.fixed_supercell_structure is None:
             self.fix_supercell(cc_struct)
         else:
             # Check if the supercell is different
-            if np.max(np.abs(cc_struct.unit_cell - self.fixed_supercell.unit_cell)) > 1e-6:
+            if np.max(np.abs(cc_struct.unit_cell - self.fixed_supercell_structure.unit_cell)) > 1e-6:
                 self.fix_supercell(cc_struct)        
 
         self.get_energy_forces(cc_struct)
 
 
-    def get_commensurate_supercell(self, supercell_structure, max_cell_value = 100):
+    def fix_supercell(self, supercell_structure, max_cell_value = 100):
         """
         Given a supercell structure, it computes the corresponding value of the supercell,
         and returns a new centroid structure, with the same unit cell as the one of the corresponding supercell.
