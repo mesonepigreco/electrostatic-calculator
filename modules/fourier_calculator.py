@@ -89,7 +89,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
             # Override the q list and the dynamical matrix
             for iq, q in enumerate(phonons.q_tot):
-                self.dynq[iq, :, :] = phonons.dynmats[iq]
+                self.dynq[iq, :, :] = - phonons.dynmats[iq]
                 q_grid[iq] = q
             
         else:
