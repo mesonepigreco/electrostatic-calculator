@@ -20,6 +20,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         self.nac_fc = None
 
+        self.mode = "remove"  # Accepted modes are 'remove' or 'add'
+
         self.results = {}
         self.implemented_properties = ["energy", "forces"]
 
@@ -44,6 +46,9 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         for iq, q in enumerate(dyn.q_tot):
             new_dyn.dynmats[iq][:,:] = 0
         self.tensor.SetupFromPhonons(new_dyn)
+
+        # Remove the subtraction of the long-range forces from the tensor
+        self.tensor.tensor[:,:,:] = 0.0
 
         self.centroids = dyn.structure.copy()
 
