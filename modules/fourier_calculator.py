@@ -74,8 +74,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
             self.tensor.tensor[:,:,:] = 0
             for iq, q in enumerate(q_grid):
                 # Leave gamma unchanged
-                if np.max(np.abs(q)) > 1e-6:
-                    self.dynq[iq, :, :] = self.tensor.Interpolate(-q)
+                #if np.max(np.abs(q)) > 1e-6:
+                self.dynq[iq, :, :] = self.tensor.Interpolate(-q)
             
         elif self.mode == "remove":
             self.tensor.tensor[:,:,:] = self.remove_tensor.copy()
