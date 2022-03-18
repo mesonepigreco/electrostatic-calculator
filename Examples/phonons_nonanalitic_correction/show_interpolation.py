@@ -11,13 +11,15 @@ DYN_222 = "dyn"
 ELE_222 = "fourier_dyn/dyn_cc_2x2x2_"#"4x4x4_electrostatic/dyn""electrostatic_dyn/dyn"
 NQIRR = 4
 
-#ELE_333 = "fourier_dyn/dyn_cc_6x6x6_"#"4x4x4_electrostatic/dyn"
-#NQIRR_BIG = 20
-ELE_333 = "fourier_dyn/dyn_cc_4x4x4_"
+ELE_444 = "fourier_dyn/dyn_cc_4x4x4_"
 NQIRR_BIG = 10
 
+
+ELE_666 = "fourier_dyn/dyn_cc_6x6x6_"#"4x4x4_electrostatic/dyn"
+NQIRR_BIGG = 20
+
 PATH= "GX"
-N_POINTS = 100
+N_POINTS = 1000
 
 
 
@@ -67,7 +69,7 @@ t2_ELE.Apply_ASR()
 
 
 # Prepare the tensor with the born effective charges
-dyn = CC.Phonons.Phonons(ELE_333, NQIRR_BIG)
+dyn = CC.Phonons.Phonons(ELE_444, NQIRR_BIG)
 t2_ELEbig =  CC.ForceTensor.Tensor2(dyn.structure,
                                  dyn.structure.generate_supercell(dyn.GetSupercell()),
                                  dyn.GetSupercell())
@@ -76,9 +78,21 @@ t2_ELEbig.Center(Far = 3)
 t2_ELEbig.Apply_ASR()
 
 
+
+# Prepare the tensor with the born effective charges
+dyn = CC.Phonons.Phonons(ELE_666, NQIRR_BIGG)
+t2_ELEbigg =  CC.ForceTensor.Tensor2(dyn.structure,
+                                 dyn.structure.generate_supercell(dyn.GetSupercell()),
+                                 dyn.GetSupercell())
+t2_ELEbigg.SetupFromPhonons(dyn)
+t2_ELEbigg.Center(Far = 3)
+t2_ELEbigg.Apply_ASR()
+
+
+
 # Now we need to perform the interpolation, dyagonalizing the dynamical matrix for each q point of the path
 n_modes = 3 * dyn.structure.N_atoms
-ws = np.zeros((N_POINTS, n_modes, 3), dtype = np.double)
+ws = np.zeros((N_POINTS, n_modes, 4), dtype = np.double)
 m = dyn.structure.get_masses_array()
 m = np.tile(m, (3,1)).T.ravel()
 
@@ -109,6 +123,8 @@ for i in range(N_POINTS):
     # Produce the dynq with the sum
     fc_ele222 = t2_ELE.Interpolate(-q_path[i,:])
     fc_ele444 = t2_ELEbig.Interpolate(-q_path[i,:])
+    fc_ele666 = t2_ELEbigg.Interpolate(-q_path[i,:])
+    
     fc = (fc_nobec - fc_ele222 + fc_ele444)
     # Mass rescale the force constant matrix
     dynq = fc / np.outer(np.sqrt(m), np.sqrt(m))
@@ -116,6 +132,15 @@ for i in range(N_POINTS):
     # Diagonalize the dynamical matrix
     w2 = np.linalg.eigvalsh(dynq)
     ws[i, :,2] = np.sqrt(np.abs(w2)) * np.sign(w2) * CC.Units.RY_TO_CM
+
+    
+    fc = (fc_nobec - fc_ele222 + fc_ele666)
+    # Mass rescale the force constant matrix
+    dynq = fc / np.outer(np.sqrt(m), np.sqrt(m))
+
+    # Diagonalize the dynamical matrix
+    w2 = np.linalg.eigvalsh(dynq)
+    ws[i, :,3] = np.sqrt(np.abs(w2)) * np.sign(w2) * CC.Units.RY_TO_CM
 
 
     
@@ -128,14 +153,17 @@ for i in range(n_modes):
     label1 = None
     label2 = None
     label3 = None
+    label4 = None
     if i ==0 :
-        label1 = "BEC"
-        label2 = "no BEC"
-        label3 = "my BEC"
+        label1 = "NAC"
+        label2 = "no NAC"
+        label3 = "4x4x4 NAC"
+        label4 = "6x6x6 NAC"
         
     ax.plot(x_axis, ws[:,i,1], color = "k", label = label1)
-    ax.plot(x_axis, ws[:,i,0], color = "r", ls = "dashed", label=label2)
-    ax.plot(x_axis, ws[:,i,2], color = "b", ls = "dotted", label=label3)
+    ax.plot(x_axis, ws[:,i,0], color = "r", ls = "dotted", label=label2)
+    ax.plot(x_axis, ws[:,i,2], color = "b", ls = "dashed", label=label3)
+    ax.plot(x_axis, ws[:,i,3], color = "g", ls = "-.", label=label4)
 
 
 # Plot vertical lines for each high symmetry points

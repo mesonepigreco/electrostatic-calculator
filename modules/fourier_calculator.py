@@ -10,7 +10,7 @@ import sys, os
 ACCEPTED_MODES = ["add", "remove"]
 
 class FourierCalculator(ase.calculators.calculator.Calculator):
-    def __init__(self, mode, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         ase.calculators.calculator.Calculator.__init__(self, *args, **kwargs)
 
         self.centroids = None
@@ -22,10 +22,6 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         self.nac_fc = None
 
-        self.mode = mode  # Accepted modes are 'remove' or 'add'
-
-        if not mode in ACCEPTED_MODES:
-            raise NotImplementedError("Error, mode '{}' not implemented. Use one of {} instead".format(mode, ACCEPTED_MODES))
 
         self.results = {}
         self.implemented_properties = ["energy", "forces"]
@@ -70,35 +66,12 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         self.dynq = np.zeros( (len(q_grid), 3*nat, 3*nat), dtype = np.complex128)
 
-        if self.mode == "add":
-            self.tensor.tensor[:,:,:] = 0
-            for iq, q in enumerate(q_grid):
-                # Leave gamma unchanged
-                #if np.max(np.abs(q)) > 1e-6:
-                self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
-                self.dynq[iq, :, :] += np.conj(self.dynq[iq, :, :].T)
-                self.dynq[iq, :, :] *= 0.5
+        self.tensor.tensor[:,:,:] = 0
+        for iq, q in enumerate(q_grid):
+            # Leave gamma unchanged
+            #if np.max(np.abs(q)) > 1e-6:
+            self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
             
-        elif self.mode == "remove":
-            self.tensor.tensor[:,:,:] = self.remove_tensor.copy()
-
-            # Avoid interpolation with effective charges
-            eff_tmp = self.tensor.effective_charges
-            self.tensor.effective_charges = None
-            phonons = self.tensor.GeneratePhonons(mesh_grid)
-            self.tensor.effective_charges = eff_tmp
-
-            # Override the q list and the dynamical matrix
-            for iq, q in enumerate(phonons.q_tot):
-                self.dynq[iq, :, :] = - phonons.dynmats[iq]
-                self.dynq[iq, :, :] -= np.conj(phonons.dynmats[iq].T)
-                self.dynq[iq, :, :] *= 0.5
-                q_grid[iq] = q
-            
-        else:
-            raise NotImplementedError("Error, mode '{}' not implemented. Did you mean one of: {}?".format(self.mode, ["add", "remove"]))
-        
-
         
         self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.fixed_supercell_structure))
 
