@@ -76,7 +76,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
                 # Leave gamma unchanged
                 #if np.max(np.abs(q)) > 1e-6:
                 self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
-                self.dynq[iq, :, :] += np.conj(phonons.dynmats[iq].T)
+                self.dynq[iq, :, :] += np.conj(self.dynq[iq, :, :].T)
                 self.dynq[iq, :, :] *= 0.5
             
         elif self.mode == "remove":
