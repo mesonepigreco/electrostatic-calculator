@@ -625,6 +625,7 @@ class LongRangeInteractions(Calculator):
         self.results["energy"] = energy
         self.results["forces"] = forces
         self.results["dipole"] = self.get_dipole() 
+        
         # Just save the structure if debug into the directory
         if self.debug:
             cc_struct.save_scf(self.label + '.scf')
