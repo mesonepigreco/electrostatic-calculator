@@ -10,7 +10,7 @@ import sys, os
 ACCEPTED_MODES = ["add", "remove"]
 
 class FourierCalculator(ase.calculators.calculator.Calculator):
-    def __init__(self, mode *args, **kwargs):
+    def __init__(self, mode, *args, **kwargs):
         ase.calculators.calculator.Calculator.__init__(self, *args, **kwargs)
 
         self.centroids = None
