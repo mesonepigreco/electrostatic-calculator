@@ -72,7 +72,6 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         if self.mode == "add":
             self.tensor.tensor[:,:,:] = 0
-            self.tensor.ad
             for iq, q in enumerate(q_grid):
                 # Leave gamma unchanged
                 #if np.max(np.abs(q)) > 1e-6:
