@@ -82,10 +82,10 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
             self.tensor.tensor[:,:,:] = self.remove_tensor.copy()
 
             # Avoid interpolation with effective charges
-            eff_tmp = self.tensor.effective_charge
-            self.tensor.effective_charge = None
+            eff_tmp = self.tensor.effective_charges
+            self.tensor.effective_charges = None
             phonons = self.tensor.GeneratePhonons(mesh_grid)
-            self.tensor.effective_charge = eff_tmp
+            self.tensor.effective_charges = eff_tmp
 
             # Override the q list and the dynamical matrix
             for iq, q in enumerate(phonons.q_tot):
