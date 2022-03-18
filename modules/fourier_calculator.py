@@ -76,6 +76,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
                 # Leave gamma unchanged
                 #if np.max(np.abs(q)) > 1e-6:
                 self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
+                self.dynq[iq, :, :] += np.conj(phonons.dynmats[iq].T)
+                self.dynq[iq, :, :] *= 0.5
             
         elif self.mode == "remove":
             self.tensor.tensor[:,:,:] = self.remove_tensor.copy()
@@ -89,6 +91,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
             # Override the q list and the dynamical matrix
             for iq, q in enumerate(phonons.q_tot):
                 self.dynq[iq, :, :] = - phonons.dynmats[iq]
+                self.dynq[iq, :, :] += np.conj(phonons.dynmats[iq].T)
+                self.dynq[iq, :, :] *= 0.5
                 q_grid[iq] = q
             
         else:
