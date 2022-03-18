@@ -66,8 +66,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         self.dynq = np.zeros( (len(q_grid), 3*nat, 3*nat), dtype = np.complex128)
         for iq, q in enumerate(q_grid):
             # Leave gamma unchanged
-            if np.max(np.abs(q)) > 1e-6:
-                self.dynq[iq, :, :] = - self.tensor.Interpolate(-q)
+            #if np.max(np.abs(q)) > 1e-6:
+            self.dynq[iq, :, :] = - self.tensor.Interpolate(-q)
         
         self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.fixed_supercell_structure))
 
