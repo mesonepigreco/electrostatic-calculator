@@ -1,7 +1,9 @@
 import cellconstructor as CC, cellconstructor.Phonons
+import cellconstructor.Methods
 import cellconstructor.ForceTensor
 
 import ase, ase.calculators, ase.calculators.calculator
+import ase.visualize
 import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 import numpy as np
@@ -52,6 +54,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         self.remove_tensor = self.tensor.tensor[:,:,:].copy()
 
         self.centroids = dyn.structure.copy()
+        self.centroids.coords[:,:] -= self.centroids.coords[0, :]
+        self.reference_supercell = self.centroids.copy()  # Reference supercell must match centroids in the correct supercell
 
     def setup_nac_fc(self, mesh_grid = (1,1,1)):
         """
@@ -73,7 +77,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
             self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
             
         
-        self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.fixed_supercell_structure))
+        self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.reference_supercell))
 
 
     def get_energy_forces(self, structure):
@@ -84,8 +88,16 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         assert self.is_initialized(), "Error, initialize the calculator before using it,"
         nat_sc = structure.N_atoms
-        u_disps = structure.coords - self.fixed_supercell_structure.coords
+        u_disps = np.zeros_like(structure.coords)
+        for i in range(nat_sc):
+            u_disps[i, :] =  CC.Methods.get_closest_vector(structure.unit_cell, 
+                                                           structure.coords[i,:] - self.fixed_supercell_structure.coords[i, :])
+        
+        #ase.visualize.view(structure.get_ase_atoms())
+        #ase.visualize.view(self.fixed_supercell_structure.get_ase_atoms())
         u_disps *= CC.Units.A_TO_BOHR
+        #print("U DISPS:")
+        #print(u_disps)
 
         # Forces now are in Ry/Bohr
         forces = -self.fc.dot(u_disps.ravel()).reshape((nat_sc, 3))
@@ -104,6 +116,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         ase.calculators.calculator.Calculator.calculate(self, atoms, *args, **kwargs)
 
         cc_struct = calculator.convert_to_cc_structure(atoms)
+        cc_struct.coords[:, :] -= cc_struct.coords[0, :]
 
         # Initialize the supercell if not already done.
         # TODO: check what happens if the atoms are ordered in a different way.
@@ -150,6 +163,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         
         # Generate the supercell and apply the strain to match the given cell
         new_cell = self.centroids.generate_supercell(new_supercell)
+        self.reference_supercell = new_cell.copy()
         first_itau = new_cell.get_itau(self.centroids) - 1
         new_cell.change_unit_cell(supercell_structure.unit_cell)
         
@@ -158,6 +172,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         
         new_cell.coords = new_cell.coords[shuffle_itau, :]
         new_cell.atoms = [new_cell.atoms[x] for x in shuffle_itau]
+        self.reference_supercell.coords = self.reference_supercell.coords[shuffle_itau, :]
+        self.reference_supercell.atoms = [self.reference_supercell.atoms[x] for x in shuffle_itau]
 
 
         self.fixed_supercell_structure = new_cell
