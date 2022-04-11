@@ -85,7 +85,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
                 iq0 = iq
         
         # Perform an uniform shift over the complete dynamical matrix to get something that is zero at gamma
-        for iq in len(q_grid):
+        # This is a short range change, it should not affect the long range contribution
+        for iq in range(len(q_grid)):
             self.dynq[iq,:,:] -=  self.dynq[iq0, :, :]
             
         
