@@ -73,10 +73,20 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         self.dynq = np.zeros( (len(q_grid), 3*nat, 3*nat), dtype = np.complex128)
 
         self.tensor.tensor[:,:,:] = 0
+
+        iq0 = 0
         for iq, q in enumerate(q_grid):
             # Leave gamma unchanged
             #if np.max(np.abs(q)) > 1e-6:
             self.dynq[iq, :, :] = self.tensor.Interpolate(-q, q_direct = np.zeros(3))
+
+
+            if np.max(np.abs(q)) < 1e-6:
+                iq0 = iq
+        
+        # Perform an uniform shift over the complete dynamical matrix to get something that is zero at gamma
+        for iq in len(q_grid):
+            self.dynq[iq,:,:] -=  self.dynq[iq0, :, :]
             
         
         self.fc = np.real(CC.Phonons.GetSupercellFCFromDyn(self.dynq, np.array(q_grid), self.centroids, self.reference_supercell))
