@@ -21,6 +21,8 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         self.fixed_supercell_structure = None
         self.fixed_supercell = None
         self.fixed_itau = None 
+        self.reference_id = None
+        self.u_disps = None
 
         self.nac_fc = None
 
@@ -91,21 +93,31 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         u_disps = np.zeros_like(structure.coords)
         for i in range(nat_sc):
             u_disps[i, :] =  CC.Methods.get_closest_vector(structure.unit_cell, 
-                                                           structure.coords[i,:] - self.fixed_supercell_structure.coords[i, :])
+                                                           structure.coords[self.reference_id[i],:] - self.fixed_supercell_structure.coords[i, :])
+
+            print('IDENTIFICATING {} WITH {}; c1 = {}; c2 = {}; dist = {}'.format(i, self.reference_id[i], self.fixed_supercell_structure.coords[i, :],
+                                                                                  structure.coords[self.reference_id[i],:], np.linalg.norm(u_disps[i,:])))
         
         #ase.visualize.view(structure.get_ase_atoms())
         #ase.visualize.view(self.fixed_supercell_structure.get_ase_atoms())
         u_disps *= CC.Units.A_TO_BOHR
-        #print("U DISPS:")
-        #print(u_disps)
+        print("U DISPS:")
+        print(u_disps)
 
         # Forces now are in Ry/Bohr
         forces = -self.fc.dot(u_disps.ravel()).reshape((nat_sc, 3))
+        
+        # Shuffle the forces to match the correct itau
+        new_forces = forces.copy()
+        for i in range(nat_sc):
+            new_forces[self.reference_id[i], :] = forces[i, :]
 
         # Energy in Ry
         energy = - forces.ravel().dot(u_disps.ravel()) / 2
 
-        self.results["forces"] = forces * CC.Units.RY_TO_EV / CC.Units.BOHR_TO_ANGSTROM
+        self.u_disps = u_disps
+
+        self.results["forces"] = new_forces * CC.Units.RY_TO_EV / CC.Units.BOHR_TO_ANGSTROM
         self.results["energy"] = energy * CC.Units.RY_TO_EV
 
     def calculate(self, atoms = None, *args, **kwargs):
@@ -117,6 +129,7 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
 
         cc_struct = calculator.convert_to_cc_structure(atoms)
         cc_struct.coords[:, :] -= cc_struct.coords[0, :]
+        #cc_struct.fix_coords_in_unit_cell()
 
         # Initialize the supercell if not already done.
         # TODO: check what happens if the atoms are ordered in a different way.
@@ -168,13 +181,26 @@ class FourierCalculator(ase.calculators.calculator.Calculator):
         new_cell.change_unit_cell(supercell_structure.unit_cell)
         
         # Suffle the atomic order in the correct way
-        shuffle_itau = supercell_structure.get_itau(new_cell) - 1
-        
-        new_cell.coords = new_cell.coords[shuffle_itau, :]
-        new_cell.atoms = [new_cell.atoms[x] for x in shuffle_itau]
-        self.reference_supercell.coords = self.reference_supercell.coords[shuffle_itau, :]
-        self.reference_supercell.atoms = [self.reference_supercell.atoms[x] for x in shuffle_itau]
 
+        #shuffle_itau = supercell_structure.get_itau(new_cell) - 1
+        
+        #new_cell.coords = new_cell.coords[shuffle_itau, :]
+        #new_cell.atoms = [new_cell.atoms[x] for x in shuffle_itau]
+        #self.reference_supercell.coords = self.reference_supercell.coords[shuffle_itau, :]
+        #self.reference_supercell.atoms = [self.reference_supercell.atoms[x] for x in shuffle_itau]
+
+        # Prepare a correct identification between the input structure and the current structure
+        self.reference_id = new_cell.get_itau(supercell_structure) - 1
+
+        # Check that the identification of the atoms worked
+        good_itau = np.all( [new_cell.atoms[i] == supercell_structure.atoms[self.reference_id[i]] for i in range(new_cell.N_atoms)]) 
+        
+        if not good_itau or (len(np.unique(self.reference_id)) != new_cell.N_atoms):
+            ERR = '''
+Error while assigning the effective charges to atoms.
+    try to initialize the calculator with a less distorted structure.
+'''
+            raise ValueError(ERR)
 
         self.fixed_supercell_structure = new_cell
         self.setup_nac_fc(new_supercell)
