@@ -8,13 +8,15 @@ import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 import numpy as np
 import sys, os
+import warnings
 
 ACCEPTED_MODES = ["add", "remove"]
 
 class FourierCalculator(ase.calculators.calculator.Calculator):
     def __init__(self, *args, **kwargs):
         ase.calculators.calculator.Calculator.__init__(self, *args, **kwargs)
-
+        warnings.warn("Deprecated, use calculator.ElectrostaticCalculator instead!")
+        
         self.centroids = None
         self.tensor = None 
         

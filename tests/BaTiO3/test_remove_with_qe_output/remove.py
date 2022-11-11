@@ -21,7 +21,7 @@ def test_remove():
     atms.set_calculator(calculator)
     
     print(atms.get_total_energy())
-    print(forces - atms.get_forces())
+    print(atms.get_forces())# - forces)
 
     assert np.max(np.linalg.norm(calculator.u_disps, axis = 1)) < .5
 
