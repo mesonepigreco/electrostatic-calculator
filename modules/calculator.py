@@ -4,6 +4,7 @@ from ase.calculators.calculator import Calculator
 import cellconstructor as CC
 import cellconstructor.Structure
 import cellconstructor.Methods
+import cellconstructor.Phonons
 
 import numpy as np
 import sys, os
@@ -35,6 +36,9 @@ class ElectrostaticCalculator(Calculator):
         self.reciprocal_vectors = None
         self.cutoff = 5 # Stop the sum when k > 5/ eta
         self.kpoints = None
+
+
+        self.implemented_properties = ["energy", "forces"]#, "stress"]
 
     def init(self, reference_structure : CC.Structure.Structure, effective_charges : np.ndarray, dielectric_tensor : np.ndarray, supercell : tuple[int, int, int] = (1,1,1)) -> None:
         """
@@ -80,6 +84,9 @@ class ElectrostaticCalculator(Calculator):
         self.reciprocal_vectors = CC.Methods.get_reciprocal_vectors(self.reference_structure.unit_cell)
 
 
+        self.init_kpoints()
+
+
     def init_kpoints(self):
         r"""
         INITIALIZE THE K POINTS
@@ -100,14 +107,15 @@ class ElectrostaticCalculator(Calculator):
         
         self.kpoints = []
 
-        for l in range(-max_values, max_values + 1):
-            for m in range(-max_values, max_values+1):
-                for n in range(-max_values, max_values+1):
+        for l in range(-max_values[0], max_values[0] + 1):
+            for m in range(-max_values[1], max_values[1] + 1):
+                for n in range(-max_values[2], max_values[2] + 1):
                     kvector = l * self.reciprocal_vectors[0, :] 
                     kvector += m * self.reciprocal_vectors[1, :] 
                     kvector += n * self.reciprocal_vectors[2, :] 
 
-                    if np.linalg.norm(kvector) < self.cutoff / self.eta:
+                    knorm = np.linalg.norm(kvector)
+                    if knorm < self.cutoff / self.eta and knorm > 1e-6:
                          self.kpoints.append(kvector)
         
         self.kpoints = np.array(self.kpoints)
@@ -134,24 +142,52 @@ class ElectrostaticCalculator(Calculator):
         self.init(dynamical_matrix.structure, dynamical_matrix.effective_charges, dynamical_matrix.dielectric_tensor, dynamical_matrix.GetSupercell())
 
 
-    def _get_energy_force(self, struct : CC.Structure.Structure):
+
+    def check_asr(self, threshold = 1e-6):
         """
-        helper function to evaluate the energy
+        Check if the acoustic sum rule is enforced on the effective charges.
+        This is very important to properly compute the forces on the structure.
         """
 
+        nat = self.reference_structure.N_atoms
+        for i in range(3):
+            for j in range(3):
+                asr_thr = np.sum(self.effective_charges[:, i, j])
+
+                if asr_thr > threshold:
+                    raise ValueError("Error, atom index {}, electric field {} does not satisfy the ASR by {}".format(j, i, asr_thr))
+
+        v = np.random.uniform(size = 3)
+        total_shift = np.zeros(3)
+        for i in range(nat):
+            total_shift += self.effective_charges[i, :, :].dot(v)
+
+        print("total shift:", total_shift)
+        if np.linalg.norm(total_shift) > threshold:
+            raise ValueError("Error, a translation is giving problems")
+
+    def _get_energy_force(self, struct):
         n_atoms = self.reference_structure.N_atoms
 
         delta_r = struct.coords - self.reference_structure.coords  
+        delta_r *= CC.Units.A_TO_BOHR
 
         n_kpoints = self.kpoints.shape[0]
         volume = struct.get_volume() * CC.Units.A_TO_BOHR
 
-        energy = 0
+        energy = 0 + 0j
         force = np.zeros_like(struct.coords)
 
+        #print("Energy calculation:")
+        #print("-------------------")
 
         for kindex in range(n_kpoints):
             kvect = self.kpoints[kindex, :]
+
+            # Discard Gamma
+            if np.linalg.norm(kvect) < 1e-6:
+                continue
+
             k2 = kvect.dot(kvect)
             
             k_eps_k = kvect.dot(self.dielectric_tensor .dot(kvect))
@@ -159,17 +195,42 @@ class ElectrostaticCalculator(Calculator):
 
             #ZkkZ = np.einsum("ai, bj, ab -> ij", self.work_charges, self.work_charges, kk_matrix)
             ZkkZ = self.work_charges.T.dot(kk_matrix.dot(self.work_charges))
+            
+            #print()
+            #print("k point: ", kvect)
+            #print("ZkkZ:", ZkkZ)
+
 
             for i in range(n_atoms):
                 for j in range(n_atoms):
-                    exp_factor = np.exp(-1j* kvect.dot(struct.coords[j, :] - struct.coords[i, :]))
-                    cos_factor = exp_factor + np.conj(exp_factor)
-                    sin_factor = 1j * (exp_factor - np.conj(exp_factor))
-                    energy -= delta_r[i, :].dot(ZkkZ.dot(delta_r[j, :])) * exp_factor 
+                    delta_rij = struct.coords[j, :] - struct.coords[i, :]
+                    delta_rij *= CC.Units.A_TO_BOHR
 
-                    force[i, :] +=  ZkkZ.dot(delta_r[j, :]) * cos_factor
-                    force[i, :] -= delta_r[i, :] * ZkkZ.dot(delta_r[j, :])  * kvect *  sin_factor
 
+                    exp_factor = np.exp(-1j* kvect.dot(delta_rij))
+                    cos_factor = np.real(exp_factor + np.conj(exp_factor))
+                    sin_factor = np.real(1j * (exp_factor - np.conj(exp_factor)))
+
+                    ZkkZr = ZkkZ[3*i:3*i+3, 3*j:3*j+3].dot(delta_r[j, :])
+
+                    energy -= delta_r[i, :].dot(ZkkZr) * exp_factor 
+
+                    #print("Energy k:",  delta_r[i, :].dot(ZkkZr) * exp_factor )
+                    #print("Force k:", ZkkZr * cos_factor + delta_r[i, :] * ZkkZr  * kvect *  sin_factor)
+
+                    if np.isnan(energy):
+                        print("Error, energy is NaN")
+                        print("i: {};  j: {}".format(i, j))
+                        print("exp: ", exp_factor)
+                        print("k: ", kvect)
+                        print("delta R_ij: ", struct.coords[j, :] - struct.coords[i, :])
+                        raise ValueError("Error, energy is NaN")
+
+                    force[i, :] +=  ZkkZr * cos_factor
+                    force[i, :] += delta_r[i, :] * ZkkZr  * kvect *  sin_factor
+
+        assert np.imag(energy) < 1e-6, "Error, the energy has an imaginary part: {}".format(energy)
+        energy = np.real(energy)
 
         self.energy = energy * 4 * np.pi / volume * CC.Units.HA_TO_EV
         self.force = force *  4 * np.pi / volume * CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
@@ -193,7 +254,3 @@ class ElectrostaticCalculator(Calculator):
         #self.results["dipole"] = self.get_dipole() 
 
 
-
-
-        
-        
