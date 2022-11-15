@@ -26,24 +26,25 @@ def test_1D(plot = False):
 
     n_steps = 20
     dstep = 0.1
+    coordinate = 0
 
     energy = np.zeros(n_steps, dtype = np.double)
     forces = np.zeros((n_steps, 1, 3), dtype = np.double)
     x_values = np.zeros_like(energy)
 
     for i in range(n_steps):
-        s.coords[0,0] += dstep
+        s.coords[0,coordinate] += dstep
         atm = s.get_ase_atoms()
         atm.set_calculator(calculator)
         energy[i] = atm.get_total_energy()
         forces[i, :, :] = atm.get_forces()
-        x_values[i] = s.coords[0,0]
+        x_values[i] = s.coords[0,coordinate]
 
     if plot:
         plt.figure()
         plt.title("1 particle")
         plt.plot(x_values, -np.gradient(energy, x_values), label = "Numerical diff")
-        plt.plot(x_values, forces[:, 0,0], label = "Forces")
+        plt.plot(x_values, forces[:, 0,coordinate], label = "Forces")
         plt.legend()
         plt.tight_layout()
 
@@ -56,8 +57,8 @@ def test_2D(plot = False):
     effective_charges = np.zeros((2,3,3), dtype = np.double)
     dielectric_tensor = np.eye(3)
 
-    effective_charges[0, :, :] = np.eye(3)
-    effective_charges[1, :, :] = -np.eye(3)
+    effective_charges[0, :, :] = -np.eye(3)
+    effective_charges[1, :, :] = np.eye(3)
 
 
     calculator = calc.ElectrostaticCalculator()
@@ -67,26 +68,30 @@ def test_2D(plot = False):
 
     n_steps = 20
     dstep = 0.1
+    coordinate = 2
 
     energy = np.zeros(n_steps, dtype = np.double)
     forces = np.zeros((n_steps, 2, 3), dtype = np.double)
     x_values = np.zeros_like(energy)
 
     for i in range(n_steps):
-        s.coords[0,0] += dstep
+        s.coords[0,coordinate] += dstep
         atm = s.get_ase_atoms()
         atm.set_calculator(calculator)
         energy[i] = atm.get_total_energy()
         forces[i, :, :] = atm.get_forces()
-        x_values[i] = s.coords[0,0]
+        x_values[i] = s.coords[0,coordinate]
 
     if plot:
         plt.figure()
         plt.title("2 particles")
         plt.plot(x_values, -np.gradient(energy, x_values), label = "Numerical diff")
-        plt.plot(x_values, forces[:, 0,0], label = "Forces")
+        plt.plot(x_values, forces[:, 0,coordinate], label = "Forces")
         plt.legend()
         plt.tight_layout()
+        plt.figure()
+        plt.title("2 particles")
+        plt.plot(x_values[1:-1], (-np.gradient(energy, x_values) - forces[:, 0,coordinate])[1:-1], label = "Displacements")
 
 
 
@@ -103,19 +108,21 @@ def test_total_translation(plot = False):
 
     for i in range(BaTiO3.structure.N_atoms):
         BaTiO3.effective_charges[i, :, :] = np.eye(3) #* np.trace(BaTiO3.effective_charges[i, :, :]) / 3
+    BaTiO3.dielectric_tensor[:,:] = np.eye(3)
 
     calculator = calc.ElectrostaticCalculator()
+    calculator.eta = .1
+    calculator.cutoff = 10
     calculator.init_from_phonons(BaTiO3)
-    calculator.check_asr()
-    calculator.dielectric_tensor[:,:] = np.eye(3)
+    #calculator.check_asr()
 
     struct = BaTiO3.structure.copy()
     struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
 
     # Move atom
     direction = 0
-    delta = 0.01
-    N_steps  = 50
+    delta = 0.0001
+    N_steps  = 500
 
     energies = np.zeros(N_steps, dtype = np.double)
     forces = np.zeros(N_steps, dtype = np.double)
@@ -126,7 +133,7 @@ def test_total_translation(plot = False):
     ss = []
 
     for i in range(N_steps):    
-        struct.coords[:, direction] += delta
+        struct.coords[0, direction] += delta
         xvalues[i] = struct.coords[0, direction]
 
         r_value = np.zeros(3)
@@ -137,7 +144,7 @@ def test_total_translation(plot = False):
         atm.set_calculator(calculator)
 
         energies[i] = atm.get_total_energy()
-        forces[i] = np.sum(atm.get_forces()[:, direction]) / nat
+        forces[i] = np.sum(atm.get_forces()[0, direction])
 
         asr[i] = np.linalg.norm( np.sum(atm.get_forces(), axis = 0))
 
@@ -154,15 +161,17 @@ def test_total_translation(plot = False):
         #print(calculator.charge_coords)
 
     if plot:
-        plt.plot(xvalues, energies, label = "Energy")
+        #plt.plot(xvalues, energies, label = "Energy")
         plt.figure()
-        plt.plot(xvalues, -np.gradient(energies, delta), label = "Numerical diff")
+        plt.plot(xvalues, -np.gradient(energies, xvalues), label = "Numerical diff")
         plt.plot(xvalues, forces, label = "Forces")
         plt.legend()
         plt.tight_layout()
         plt.figure()
-        plt.plot(xvalues, asr, label = "ASR")
-        plt.plot(xvalues, asr2, label = "ASR - 2")
+        plt.title("BaTiO3")
+        plt.plot(xvalues[1:-1], (-np.gradient(energies, xvalues) - forces)[1:-1], label = "Displacements")
+        #plt.plot(xvalues, asr, label = "ASR")
+        #plt.plot(xvalues, asr2, label = "ASR - 2")
         plt.legend()
         plt.tight_layout()
         #ase.visualize.view(ss)
@@ -300,7 +309,7 @@ def test_one_atom_model(plot = False):
 if __name__ == "__main__":
     #test_1D(True)
     test_2D(True)
-    #test_total_translation(True)
+    test_total_translation(True)
     #test_unit_cell(plot = True)
     #test_one_atom_model(plot = True)
     plt.show()
