@@ -98,8 +98,9 @@ class ElectrostaticCalculator(Calculator):
 
             \left| \vec k \right| < \frac{C}{\eta}
 
-        where :math:`C` is the cutoff and :math:`\eta` is the size of the
-        charges.
+        where :math:`C` is the cutoff and :math:`\eta` is the size of the gaussian charge core.
+        
+        We store the k vectors in Bohr^-1 to have a consistent units
         """
 
         # Initialize the sum over k
@@ -116,7 +117,7 @@ class ElectrostaticCalculator(Calculator):
 
                     knorm = np.linalg.norm(kvector)
                     if knorm < self.cutoff / self.eta and knorm > 1e-6:
-                         self.kpoints.append(kvector)
+                         self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
         
         self.kpoints = np.array(self.kpoints)
         self.energy = None
@@ -173,13 +174,13 @@ class ElectrostaticCalculator(Calculator):
         delta_r *= CC.Units.A_TO_BOHR
 
         n_kpoints = self.kpoints.shape[0]
-        volume = struct.get_volume() * CC.Units.A_TO_BOHR
+        volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
 
         energy = 0 + 0j
         force = np.zeros_like(struct.coords)
 
-        #print("Energy calculation:")
-        #print("-------------------")
+        print("Energy calculation:")
+        print("-------------------")
 
         for kindex in range(n_kpoints):
             kvect = self.kpoints[kindex, :]
@@ -191,7 +192,7 @@ class ElectrostaticCalculator(Calculator):
             k2 = kvect.dot(kvect)
             
             k_eps_k = kvect.dot(self.dielectric_tensor .dot(kvect))
-            kk_matrix = np.outer(kvect, kvect) * np.exp(-self.eta**2 * k2 / 2) / k_eps_k
+            kk_matrix = np.outer(kvect, kvect) * np.exp(-(self.eta * CC.Units.A_TO_BOHR)**2 * k2 / 2) / k_eps_k
 
             #ZkkZ = np.einsum("ai, bj, ab -> ij", self.work_charges, self.work_charges, kk_matrix)
             ZkkZ = self.work_charges.T.dot(kk_matrix.dot(self.work_charges))
@@ -207,9 +208,9 @@ class ElectrostaticCalculator(Calculator):
                     delta_rij *= CC.Units.A_TO_BOHR
 
 
-                    exp_factor = np.exp(-1j* kvect.dot(delta_rij))
-                    cos_factor = np.real(exp_factor + np.conj(exp_factor))
-                    sin_factor = np.real(1j * (exp_factor - np.conj(exp_factor)))
+                    exp_factor = np.exp(np.complex128(-1j)* kvect.dot(delta_rij))
+                    cos_factor = np.real(np.complex128(exp_factor + np.conj(exp_factor)))
+                    sin_factor = np.real(np.complex128(1j) * (exp_factor - np.conj(exp_factor)))
 
                     ZkkZr = ZkkZ[3*i:3*i+3, 3*j:3*j+3].dot(delta_r[j, :])
 
@@ -226,8 +227,12 @@ class ElectrostaticCalculator(Calculator):
                         print("delta R_ij: ", struct.coords[j, :] - struct.coords[i, :])
                         raise ValueError("Error, energy is NaN")
 
+                    print("i = {}; j = {}; k = {};".format(i, j, kvect))
+                    print("tr(ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3] * exp_factor))
+                    print("tr(d/dx ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3]* sin_factor) * kvect / CC.Units.BOHR_TO_ANGSTROM) 
+
                     force[i, :] +=  ZkkZr * cos_factor
-                    force[i, :] += delta_r[i, :] * ZkkZr  * kvect *  sin_factor
+                    force[i, :] += delta_r[i, :] * ZkkZr  * kvect *  sin_factor 
 
         assert np.imag(energy) < 1e-6, "Error, the energy has an imaginary part: {}".format(energy)
         energy = np.real(energy)

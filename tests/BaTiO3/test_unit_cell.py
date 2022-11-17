@@ -48,30 +48,35 @@ def test_1D(plot = False):
         plt.legend()
         plt.tight_layout()
 
-def test_2D(plot = False):
-    s = CC.Structure.Structure(2)
+def test_2D(plot = False, nat = 2):
+    s = CC.Structure.Structure(nat)
     s.unit_cell = np.eye(3)
     s.has_unit_cell = True
-    s.coords[1, :] = .5
 
-    effective_charges = np.zeros((2,3,3), dtype = np.double)
+    for i in range(nat):
+        s.coords[i, :] = np.random.uniform(size = 3)
+
+    effective_charges = np.zeros((nat,3,3), dtype = np.double)
     dielectric_tensor = np.eye(3)
 
-    effective_charges[0, :, :] = -np.eye(3)
-    effective_charges[1, :, :] = np.eye(3)
-
+    for i in range(nat):
+        effective_charges[i, :, :] = np.eye(3) 
+        
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = 1
+    calculator.eta = 0.1
+    calculator.cutoff = 20
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
     print("kpts:", calculator.kpoints)
 
+    s.coords += np.random.normal(size = s.coords.shape, scale = 0.1) # This is the culprit
+
     n_steps = 20
-    dstep = 0.1
-    coordinate = 2
+    dstep = 0.01
+    coordinate = 0
 
     energy = np.zeros(n_steps, dtype = np.double)
-    forces = np.zeros((n_steps, 2, 3), dtype = np.double)
+    forces = np.zeros((n_steps, nat, 3), dtype = np.double)
     x_values = np.zeros_like(energy)
 
     for i in range(n_steps):
@@ -84,13 +89,13 @@ def test_2D(plot = False):
 
     if plot:
         plt.figure()
-        plt.title("2 particles")
+        plt.title("{} particles".format(nat))
         plt.plot(x_values, -np.gradient(energy, x_values), label = "Numerical diff")
         plt.plot(x_values, forces[:, 0,coordinate], label = "Forces")
         plt.legend()
         plt.tight_layout()
         plt.figure()
-        plt.title("2 particles")
+        plt.title("{} particles".format(nat))
         plt.plot(x_values[1:-1], (-np.gradient(energy, x_values) - forces[:, 0,coordinate])[1:-1], label = "Displacements")
 
 
@@ -111,18 +116,18 @@ def test_total_translation(plot = False):
     BaTiO3.dielectric_tensor[:,:] = np.eye(3)
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = .1
-    calculator.cutoff = 10
+    calculator.eta = 6
+    calculator.cutoff = 5
     calculator.init_from_phonons(BaTiO3)
     #calculator.check_asr()
 
     struct = BaTiO3.structure.copy()
-    struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
+    #struct.coords += np.random.normal(size = struct.coords.shape, scale = 0.05)
 
     # Move atom
     direction = 0
-    delta = 0.0001
-    N_steps  = 500
+    delta = 0.001
+    N_steps  = 10
 
     energies = np.zeros(N_steps, dtype = np.double)
     forces = np.zeros(N_steps, dtype = np.double)
@@ -136,15 +141,15 @@ def test_total_translation(plot = False):
         struct.coords[0, direction] += delta
         xvalues[i] = struct.coords[0, direction]
 
-        r_value = np.zeros(3)
-        r_value[direction] = xvalues[i] - xvalues[0]
+        #r_value = np.zeros(3)
+        #r_value[direction] = xvalues[i] - xvalues[0]
         
         atm = struct.get_ase_atoms()
         ss.append(atm)
         atm.set_calculator(calculator)
 
         energies[i] = atm.get_total_energy()
-        forces[i] = np.sum(atm.get_forces()[0, direction])
+        forces[i] = atm.get_forces()[0, direction] #np.sum(atm.get_forces()[0, direction])
 
         asr[i] = np.linalg.norm( np.sum(atm.get_forces(), axis = 0))
 
@@ -208,8 +213,8 @@ def test_unit_cell(plot = False):
     # Move atom
     atm_id = 2
     direction = 0
-    delta = 0.01
-    N_steps  = 50
+    delta = 0.005
+    N_steps  = 100
 
     energies = np.zeros(N_steps, dtype = np.double)
     forces = np.zeros(N_steps, dtype = np.double)
@@ -225,7 +230,6 @@ def test_unit_cell(plot = False):
         atm = struct.get_ase_atoms()
         ss.append(atm)
         atm.set_calculator(calculator)
-
         energies[i] = atm.get_total_energy()
         forces[i] = atm.get_forces()[atm_id, direction]
 
@@ -309,7 +313,7 @@ def test_one_atom_model(plot = False):
 if __name__ == "__main__":
     #test_1D(True)
     test_2D(True)
-    test_total_translation(True)
+    #test_total_translation(True)
     #test_unit_cell(plot = True)
     #test_one_atom_model(plot = True)
     plt.show()
