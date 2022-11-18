@@ -48,7 +48,7 @@ def test_1D(plot = False):
         plt.legend()
         plt.tight_layout()
 
-def test_2D(plot = False, nat = 2):
+def test_2D(plot = False, nat = 5):
     s = CC.Structure.Structure(nat)
     s.unit_cell = np.eye(3)
     s.has_unit_cell = True
@@ -67,12 +67,13 @@ def test_2D(plot = False, nat = 2):
     calculator.eta = 0.1
     calculator.cutoff = 20
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
+    calculator.kpoints = calculator.kpoints[:1, :]
     print("kpts:", calculator.kpoints)
 
     s.coords += np.random.normal(size = s.coords.shape, scale = 0.1) # This is the culprit
 
     n_steps = 20
-    dstep = 0.01
+    dstep = 0.001
     coordinate = 0
 
     energy = np.zeros(n_steps, dtype = np.double)
@@ -80,12 +81,17 @@ def test_2D(plot = False, nat = 2):
     x_values = np.zeros_like(energy)
 
     for i in range(n_steps):
+        print()
+        print()
+        print("coordinates:")
+        print(s.coords)
         s.coords[0,coordinate] += dstep
         atm = s.get_ase_atoms()
         atm.set_calculator(calculator)
         energy[i] = atm.get_total_energy()
         forces[i, :, :] = atm.get_forces()
         x_values[i] = s.coords[0,coordinate]
+        print()
 
     if plot:
         plt.figure()

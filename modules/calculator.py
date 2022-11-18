@@ -12,6 +12,8 @@ import sys, os
 import scipy, scipy.special
 from typing import List, Union
 
+DEBUG = False
+
 def convert_to_cc_structure(item):
     """
     Convert any structure (either ASE or Celconstructor) into a 
@@ -197,13 +199,16 @@ class ElectrostaticCalculator(Calculator):
             #ZkkZ = np.einsum("ai, bj, ab -> ij", self.work_charges, self.work_charges, kk_matrix)
             ZkkZ = self.work_charges.T.dot(kk_matrix.dot(self.work_charges))
             
-            #print()
-            #print("k point: ", kvect)
-            #print("ZkkZ:", ZkkZ)
+            if DEBUG:
+                print()
+                print("k point: ", kvect)
+                print("ZkkZ:", ZkkZ)
 
 
             for i in range(n_atoms):
                 for j in range(n_atoms):
+                    #if i == j:
+                    #    continue
                     delta_rij = struct.coords[j, :] - struct.coords[i, :]
                     delta_rij *= CC.Units.A_TO_BOHR
 
@@ -218,7 +223,6 @@ class ElectrostaticCalculator(Calculator):
 
                     #print("Energy k:",  delta_r[i, :].dot(ZkkZr) * exp_factor )
                     #print("Force k:", ZkkZr * cos_factor + delta_r[i, :] * ZkkZr  * kvect *  sin_factor)
-
                     if np.isnan(energy):
                         print("Error, energy is NaN")
                         print("i: {};  j: {}".format(i, j))
@@ -227,15 +231,32 @@ class ElectrostaticCalculator(Calculator):
                         print("delta R_ij: ", struct.coords[j, :] - struct.coords[i, :])
                         raise ValueError("Error, energy is NaN")
 
-                    print("i = {}; j = {}; k = {};".format(i, j, kvect))
-                    print("tr(ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3] * exp_factor))
-                    print("tr(d/dx ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3]* sin_factor) * kvect / CC.Units.BOHR_TO_ANGSTROM) 
+
+                    if DEBUG:
+                        print()
+                        print("i = {}; j = {}; k = {};".format(i, j, kvect))
+                        print("tr(ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3] * exp_factor))
+                        print("tr(d/dx ZkkZ_exp) = ", np.einsum("aa", ZkkZ[3*i:3*i+3, 3*j:3*j+3]* sin_factor) * kvect / CC.Units.BOHR_TO_ANGSTROM) 
+                        print("delta r_i = ", delta_r[i, :], "delta r_j = ", delta_r[j, :])
+                        print("delta_rij = ", delta_rij)
+                        print("sin_factor = ", sin_factor)
+                        print("cos_factor = ", cos_factor)
+                        print("exp_factor = ", exp_factor)
+                        print("ZkkZ r_j = ", ZkkZr)
+                        print("r_i ZkkZ r_j = ", delta_r[i, :].dot(ZkkZr))
 
                     force[i, :] +=  ZkkZr * cos_factor
-                    force[i, :] += delta_r[i, :] * ZkkZr  * kvect *  sin_factor 
+                    force[i, :] += delta_r[i, :].dot(ZkkZr)  * kvect *  sin_factor 
 
         assert np.imag(energy) < 1e-6, "Error, the energy has an imaginary part: {}".format(energy)
         energy = np.real(energy)
+
+        if DEBUG:
+            print()
+            print("Total Energy: {}  | Total force:".format(energy))
+            print(force)
+            print()
+            print()
 
         self.energy = energy * 4 * np.pi / volume * CC.Units.HA_TO_EV
         self.force = force *  4 * np.pi / volume * CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
