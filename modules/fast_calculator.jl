@@ -1,6 +1,10 @@
-using Pkg 
-Pkg.add("LinearAlgebra")
-using LinearAlgebra
+try
+    using LinearAlgebra
+catch
+    using Pkg 
+    Pkg.add("LinearAlgebra")
+    using LinearAlgebra
+end
 
 @doc raw"""
     get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
