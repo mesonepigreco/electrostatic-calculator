@@ -189,8 +189,9 @@ class ElectrostaticCalculator(Calculator):
         energy = 0 + 0j
         force = np.zeros_like(struct.coords)
 
-        print("Energy calculation:")
-        print("-------------------")
+        if DEBUG:
+            print("Energy calculation:")
+            print("-------------------")
 
         for kindex in range(n_kpoints):
             kvect = self.kpoints[kindex, :]
