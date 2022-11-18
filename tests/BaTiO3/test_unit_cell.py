@@ -117,9 +117,9 @@ def test_total_translation(plot = False):
     BaTiO3.Symmetrize()
     nat = BaTiO3.structure.N_atoms
 
-    for i in range(BaTiO3.structure.N_atoms):
-        BaTiO3.effective_charges[i, :, :] = np.eye(3) #* np.trace(BaTiO3.effective_charges[i, :, :]) / 3
-    BaTiO3.dielectric_tensor[:,:] = np.eye(3)
+    #for i in range(BaTiO3.structure.N_atoms):
+    #    BaTiO3.effective_charges[i, :, :] = np.eye(3) #* np.trace(BaTiO3.effective_charges[i, :, :]) / 3
+    #BaTiO3.dielectric_tensor[:,:] = np.eye(3)
 
     calculator = calc.ElectrostaticCalculator()
     calculator.eta = 6
@@ -181,7 +181,8 @@ def test_total_translation(plot = False):
         plt.figure()
         plt.title("BaTiO3")
         plt.plot(xvalues[1:-1], (-np.gradient(energies, xvalues) - forces)[1:-1], label = "Displacements")
-        #plt.plot(xvalues, asr, label = "ASR")
+        plt.figure()
+        plt.plot(xvalues, asr, label = "ASR")
         #plt.plot(xvalues, asr2, label = "ASR - 2")
         plt.legend()
         plt.tight_layout()
@@ -318,8 +319,8 @@ def test_one_atom_model(plot = False):
 
 if __name__ == "__main__":
     #test_1D(True)
-    test_2D(True)
-    #test_total_translation(True)
+    #test_2D(True)
+    test_total_translation(True)
     #test_unit_cell(plot = True)
     #test_one_atom_model(plot = True)
     plt.show()

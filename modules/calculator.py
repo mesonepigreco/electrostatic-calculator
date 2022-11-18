@@ -172,7 +172,15 @@ class ElectrostaticCalculator(Calculator):
     def _get_energy_force(self, struct):
         n_atoms = self.reference_structure.N_atoms
 
+        
+
         delta_r = struct.coords - self.reference_structure.coords  
+
+        # Remove the global translations (ASR)
+        asr_delta_r = np.mean(delta_r, axis = 0)
+        delta_r[:,:] -= asr_delta_r
+
+
         delta_r *= CC.Units.A_TO_BOHR
 
         n_kpoints = self.kpoints.shape[0]
@@ -250,6 +258,9 @@ class ElectrostaticCalculator(Calculator):
 
         assert np.imag(energy) < 1e-6, "Error, the energy has an imaginary part: {}".format(energy)
         energy = np.real(energy)
+
+        # Remove from the forces the global translations
+        force[:,:] -= np.mean(force, axis = 0) 
 
         if DEBUG:
             print()
