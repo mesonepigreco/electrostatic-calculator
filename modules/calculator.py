@@ -8,9 +8,23 @@ import cellconstructor.Phonons
 
 import numpy as np
 import sys, os
+import warnings
 
 import scipy, scipy.special
 from typing import List, Union
+
+
+__JULIA_EXT__ = False
+try:
+    import julia, julia.Main
+
+    # Install the missing packages if required
+    julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
+
+except:
+    warnings.warn("[WARNING] julia not found, python fallback: the long-range electrostatic calculator may be slow.")
+    raise
+    pass
 
 DEBUG = False
 
@@ -36,8 +50,9 @@ class ElectrostaticCalculator(Calculator):
         self.work_charges = None  # The actually initialized effective charges
         self.dielectric_tensor = None
         self.reciprocal_vectors = None
-        self.cutoff = 5 # Stop the sum when k > 5/ eta
+        self.cutoff = 10 # Stop the sum when k > 5/ eta
         self.kpoints = None
+        self.julia_speedup = True  
 
 
         self.implemented_properties = ["energy", "forces"]#, "stress"]
@@ -73,11 +88,12 @@ class ElectrostaticCalculator(Calculator):
 
         self.reference_structure = reference_structure.generate_supercell(supercell)
         n_atoms = self.reference_structure.N_atoms
+        n_atoms_uc = reference_structure.N_atoms
         self.effective_charges = np.zeros( (n_atoms, 3, 3), dtype = np.double)
         self.dielectric_tensor = dielectric_tensor.copy()
 
         for i in range(np.prod(supercell)):
-            self.effective_charges[i * n_atoms : (i+1) * n_atoms, :, :] = effective_charges
+            self.effective_charges[i * n_atoms_uc : (i+1) * n_atoms_uc, :, :] = effective_charges
 
         self.work_charges = np.zeros( (3, 3*n_atoms), dtype = np.double)
         for i in range(3):
@@ -146,7 +162,7 @@ class ElectrostaticCalculator(Calculator):
 
 
 
-    def check_asr(self, threshold = 1e-6):
+    def check_asr(self, threshold : float = 1e-6 ) -> None:
         """
         Check if the acoustic sum rule is enforced on the effective charges.
         This is very important to properly compute the forces on the structure.
@@ -158,21 +174,43 @@ class ElectrostaticCalculator(Calculator):
                 asr_thr = np.sum(self.effective_charges[:, i, j])
 
                 if asr_thr > threshold:
-                    raise ValueError("Error, atom index {}, electric field {} does not satisfy the ASR by {}".format(j, i, asr_thr))
+                    raise ValueError("Error, effective charge (atom {}, electric field {}) does not satisfy the ASR by {}".format(j, i, asr_thr))
 
         v = np.random.uniform(size = 3)
         total_shift = np.zeros(3)
         for i in range(nat):
             total_shift += self.effective_charges[i, :, :].dot(v)
 
-        print("total shift:", total_shift)
         if np.linalg.norm(total_shift) > threshold:
             raise ValueError("Error, a translation is giving problems")
 
-    def _get_energy_force(self, struct):
-        n_atoms = self.reference_structure.N_atoms
+    def _get_energy_force(self, struct : CC.Structure.Structure) -> None:
+        """
+        Working function that evaluates the force and energy on the given configuration.
+        The results are stored in self.energy and self.forces
+        """
 
-        
+        if __JULIA_EXT__ and self.julia_speedup:
+            atomic_pos = struct.coords * CC.Units.A_TO_BOHR
+            volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
+            ref_structure = self.reference_structure.coords * CC.Units.A_TO_BOHR
+
+            energy, force = julia.Main.get_energy_forces(self.kpoints, 
+                atomic_pos,
+                ref_structure, 
+                self.work_charges,
+                self.dielectric_tensor,
+                self.eta * CC.Units.A_TO_BOHR,
+                volume)
+
+            energy *= CC.Units.HA_TO_EV
+            force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
+            self.energy = energy 
+            self.force = force 
+            return
+
+        # Fallback to the slow python code
+        n_atoms = self.reference_structure.N_atoms
 
         delta_r = struct.coords - self.reference_structure.coords  
 
@@ -275,6 +313,9 @@ class ElectrostaticCalculator(Calculator):
 
 
     def calculate(self, atoms=None, *args, **kwargs):
+        """
+        The actual function called by the ASE calculator
+        """
         super().calculate(atoms, *args, **kwargs)
         self.atoms = atoms
 

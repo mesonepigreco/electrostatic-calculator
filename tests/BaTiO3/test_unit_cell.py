@@ -105,6 +105,46 @@ def test_2D(plot = False, nat = 5):
         plt.plot(x_values[1:-1], (-np.gradient(energy, x_values) - forces[:, 0,coordinate])[1:-1], label = "Displacements")
 
 
+def test_julia_calculator(nat = 5):
+    s = CC.Structure.Structure(nat)
+    s.unit_cell = np.eye(3)
+    s.has_unit_cell = True
+
+    for i in range(nat):
+        s.coords[i, :] = np.random.uniform(size = 3)
+
+    effective_charges = np.zeros((nat,3,3), dtype = np.double)
+    dielectric_tensor = np.eye(3)
+
+    for i in range(nat):
+        effective_charges[i, :, :] = np.eye(3) 
+        
+
+    calculator = calc.ElectrostaticCalculator()
+    calculator.eta = 0.1
+    calculator.cutoff = 20
+    calculator.init(s.copy(), effective_charges, dielectric_tensor)    
+    old_s = s.copy()
+
+    s.coords += np.random.normal(size = s.coords.shape, scale = 0.1) # This is the culprit
+
+    atm = s.get_ase_atoms()
+    atm.set_calculator(calculator)
+    energy = atm.get_total_energy()
+    force = atm.get_forces()
+
+
+    calculator = calc.ElectrostaticCalculator()
+    calculator.eta = 0.1
+    calculator.cutoff = 20
+    calculator.init(old_s.copy(), effective_charges, dielectric_tensor)    
+    calculator.julia_speedup = False
+    atm.set_calculator(calculator)
+    new_energy = atm.get_total_energy()
+    new_force = atm.get_forces()
+
+    assert abs(energy - new_energy) < 1e-12, "Julia = {}, Python = {}".format(energy, new_energy)
+    assert np.max(abs(force - new_force)) < 1e-12, "Julia = {}, Python = {}".format(force, new_force)
 
 def test_total_translation(plot = False):
     np.random.seed(0)
@@ -318,6 +358,7 @@ def test_one_atom_model(plot = False):
         plt.tight_layout()
 
 if __name__ == "__main__":
+    test_julia_calculator()
     #test_1D(True)
     #test_2D(True)
     test_total_translation(True)
