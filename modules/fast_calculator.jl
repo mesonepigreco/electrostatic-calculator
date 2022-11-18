@@ -20,55 +20,76 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
 
 
     δr = atomic_positions .- reference_struct
-    δr_asr = sum(δr, dims = 1)
+    δr_asr = sum(δr, dims = 1)[1,:] / n_atoms
     @views for i in 1:n_atoms
         δr[i, :] .-= δr_asr
     end
 
-    energy = zeros(Complex{T})  
+    energy = zero(Complex{T})  
     I = Complex{T}(1.0im)
     force = zeros(T, (n_atoms, 3))
     kk_matrix = zeros(T, (3,3))
     ZkkZ = zeros(T, (3*n_atoms, 3*n_atoms))
-    ZkkZr = zeros(T, (3, 3))
+    ZkkZr = zeros(T, 3)
     δrⱼᵢ = zeros(T, 3)
+
+    #println("JULIA!")
 
     for kindex ∈ 1:n_ks
         k_vect = @view k_points[kindex, :]
         k² = k_vect' * k_vect
         kϵk = k_vect' * ϵ * k_vect
-
-        kk_matrix .= k_vect * k_vect'
-        kk_matrix .*= exp.( - η^2 * k² / 2)
-        kk_matrix ./= kϵk
+        
+        mul!(kk_matrix, k_vect, k_vect', exp.( - η^2 * k² / 2) / kϵk, 0)
 
         ZkkZ .= Z' * kk_matrix * Z
+
+        #println()
+        #println("k point: $k_vect")
+        #println("ZkkZ: $ZkkZ")
 
         for i ∈ 1:n_atoms
             for j ∈ 1:n_atoms
                 @views δrⱼᵢ .= atomic_positions[j, :] - atomic_positions[i, :]
 
-                exp_factor = exp(I * (k_vect' * δrⱼᵢ))
+                exp_factor = exp(-I * (k_vect' * δrⱼᵢ))
                 cos_factor = real(exp_factor + conj(exp_factor))
                 sin_factor = real(I * (exp_factor - conj(exp_factor)))
 
-                @views ZkkZr .= ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3] * δr[j, :]
+                #println("i = $i, j = $j")
+                #println("sin_factor = $sin_factor")
+                #println("cos_factor = $cos_factor")
+                #println("exp_factor = $exp_factor")
+                #println("δr_i = $(δr[i, :]);  δr_j = $(δr[j, :])")
 
-                energy -= @views ( δr[i, :]' * ZkkZr) * exp_factor
+                @views mul!(ZkkZr, ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3], δr[j, :])
+                rZkkZr = @views δr[i, :]' * ZkkZr
+
+                energy -= rZkkZr * exp_factor
+
+                #println("r_i ZkkZ r_j = $rZkkZr")
 
                 force[i, :] .+= ZkkZr .* cos_factor
-                force[i, :] .+= @views k_vect .* (( δr[i, :]' * ZkkZr) * sin_factor) 
+                force[i, :] .+= k_vect .* (rZkkZr * sin_factor) 
+
+                #println("Current force:")
+                #println("$force")
+                #println()
             end
         end
     end
 
     # Apply the acoustic sum rule
-    force_asr = sum(force, dims=1) ./ n_atoms
-    for i ∈ n_atoms
+    force_asr = sum(force, dims=1)[1,:] ./ n_atoms
+    for i ∈ 1:n_atoms
         force[i, :] .-= force_asr
     end
 
     @assert isapprox(imag(energy), 0, atol = 1e-6)
+
+    #println("total energy = $(real(energy))")
+    #println("total force = ")
+    #println("$force")
 
     # Get the total energy and forces
     energy = real(energy) * 4 * π / volume

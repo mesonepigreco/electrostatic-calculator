@@ -20,7 +20,7 @@ try:
 
     # Install the missing packages if required
     julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
-
+    __JULIA_EXT__ = True
 except:
     warnings.warn("[WARNING] julia not found, python fallback: the long-range electrostatic calculator may be slow.")
     raise
@@ -44,13 +44,13 @@ class ElectrostaticCalculator(Calculator):
     def __init__(self, *args, **kwargs):
         Calculator.__init__(self, *args, **kwargs)
 
-        self.eta = 6  # Default value is 6 Angstrom
+        self.eta = 3  # Default value is 6 Angstrom
         self.reference_structure = None 
         self.effective_charges = None
         self.work_charges = None  # The actually initialized effective charges
         self.dielectric_tensor = None
         self.reciprocal_vectors = None
-        self.cutoff = 10 # Stop the sum when k > 5/ eta
+        self.cutoff = 20 # Stop the sum when k > 5/ eta
         self.kpoints = None
         self.julia_speedup = True  
 
@@ -99,7 +99,8 @@ class ElectrostaticCalculator(Calculator):
         for i in range(3):
             self.work_charges[i, :] = self.effective_charges[:, i, :].ravel()
 
-        self.reciprocal_vectors = CC.Methods.get_reciprocal_vectors(self.reference_structure.unit_cell)
+        self.reciprocal_vectors = self.reference_structure.get_reciprocal_vectors()
+        #CC.Methods.get_reciprocal_vectors(self.reference_structure.unit_cell)
 
 
         self.init_kpoints()
@@ -133,11 +134,16 @@ class ElectrostaticCalculator(Calculator):
                     kvector += m * self.reciprocal_vectors[1, :] 
                     kvector += n * self.reciprocal_vectors[2, :] 
 
-                    knorm = np.linalg.norm(kvector)
+                    knorm = np.linalg.norm(kvector) / (2*np.pi)
                     if knorm < self.cutoff / self.eta and knorm > 1e-6:
                          self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
         
-        self.kpoints = np.array(self.kpoints)
+        if len(self.kpoints) == 0:
+            warnings.warn("WARNING, no k-points for the sum, try to decrease the value of eta")
+            self.kpoints = np.zeros((0,0), dtype = np.float64)
+        else:
+            self.kpoints = np.array(self.kpoints)
+
         self.energy = None
         self.force = None
         self.results = {}
@@ -249,7 +255,7 @@ class ElectrostaticCalculator(Calculator):
             if DEBUG:
                 print()
                 print("k point: ", kvect)
-                print("ZkkZ:", ZkkZ)
+                #print("ZkkZ:", ZkkZ)
 
 
             for i in range(n_atoms):
@@ -293,7 +299,12 @@ class ElectrostaticCalculator(Calculator):
                         print("r_i ZkkZ r_j = ", delta_r[i, :].dot(ZkkZr))
 
                     force[i, :] +=  ZkkZr * cos_factor
-                    force[i, :] += delta_r[i, :].dot(ZkkZr)  * kvect *  sin_factor 
+                    force[i, :] += delta_r[i, :].dot(ZkkZr)  * kvect *  sin_factor
+
+                    if DEBUG:
+                        print("Current force:")
+                        print(force) 
+                        print()
 
         assert np.imag(energy) < 1e-6, "Error, the energy has an imaginary part: {}".format(energy)
         energy = np.real(energy)
