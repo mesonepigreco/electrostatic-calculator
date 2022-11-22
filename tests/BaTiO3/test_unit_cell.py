@@ -3,6 +3,7 @@ import pyelectrostatic, pyelectrostatic.calculator as calc
 import sys, os
 import cellconstructor as CC, cellconstructor.Phonons
 import ase, ase.visualize
+import pytest
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -121,8 +122,8 @@ def test_julia_calculator(nat = 5):
         
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = 0.1
-    calculator.cutoff = 20
+    calculator.eta = 0.2
+    calculator.cutoff = 10
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
     old_s = s.copy()
 
@@ -298,6 +299,7 @@ def test_unit_cell(plot = False):
         #ase.visualize.view(ss)
 
 
+@pytest.mark.skip(reason="deprecated")
 def test_one_atom_model(plot = False):
     structure = CC.Structure.Structure(1)
     structure.unit_cell = np.eye(3) * 10

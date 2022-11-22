@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def test_supercell(nat = 5, supercell = (3,3,3)):
     s = CC.Structure.Structure(nat)
-    s.unit_cell = np.eye(3) * 10
+    s.unit_cell = np.eye(3) * 5
     s.has_unit_cell = True
 
     for i in range(nat):
