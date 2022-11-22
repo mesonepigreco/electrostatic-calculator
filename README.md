@@ -6,12 +6,17 @@ A python calculator that can calculate the electrostatic long-range forces and s
 
 1. CellConstructor
 2. ASE
+3. julia
 
 The requirements can be installed as
 
 ```
 pip install -r requirements.txt
 ```
+
+But julia must be installed on the machine. 
+Julia is not a necessary dependency (the calculator will work anyway) but it may be very slow for computing energies of big systems.
+
 
 If you are not using anaconda and need root privileges, add the --user flag at the end of the command.
 
@@ -25,14 +30,19 @@ python setup.py install
 
 also in this case, add the --user option if you need root privileges.
 
+The 
+
 
 ## Usage
 
 The pyelectrostatic can be used as a simple ASE calculator.
+
+If julia is installed, you can exploit julia acceleration by running with python-jl instead of python command. 
+
 It requires to run to have effective charges and the dielectric tensor of a reference structure.
 
-It is interfaced with CellConstructor, and these information can be read from the standard Quantum-Espresso 
-dynamical matrix.
+It is interfaced with CellConstructor, 
+and these information can be read from the standard Quantum-Espresso dynamical matrix.
 
 Here an example
 
@@ -48,8 +58,8 @@ Here an example
     dyn = CC.Phonons.Phonons("BaTiO3_")
 
     # Now setup the calculator and initialize the dielectric tensor and effective charges
-    calculator = calc.LongRangeInteractions()
-    calculator.init_from_dyn(dyn)
+    calculator = calc.ElectrostaticCalculator()
+    calculator.init_from_phonons(dyn)
 
     # Get a reference structure (randomize the atomic position to have a non zero dipole moment)
     struct = dyn.structure.copy()
