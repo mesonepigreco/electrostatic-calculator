@@ -16,6 +16,8 @@ calc = calculator.ElectrostaticCalculator()
 dyn = CC.Phonons.Phonons("../compute_energy_forces/BaTiO3_")
 calc.init(dyn.structure, dyn.effective_charges, dyn.dielectric_tensor, supercell)
 
+print("k-points: ", len(calc.kpoints))
+
 final_dyn_name = os.path.join("electrostatic_dyn", "dyn_cc_{}x{}x{}_".format(SCELL, SCELL, SCELL))
 #calc.cutoff = 30
 #calc.eta = 5

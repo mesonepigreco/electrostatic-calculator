@@ -44,13 +44,13 @@ class ElectrostaticCalculator(Calculator):
     def __init__(self, *args, **kwargs):
         Calculator.__init__(self, *args, **kwargs)
 
-        self.eta = 3  # Default value is 6 Angstrom
+        self.eta = 6  # Default value is 6 Angstrom
         self.reference_structure = None 
         self.effective_charges = None
         self.work_charges = None  # The actually initialized effective charges
         self.dielectric_tensor = None
         self.reciprocal_vectors = None
-        self.cutoff = 10 # Stop the sum when k > cutoff / eta
+        self.cutoff = 5 # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
 
@@ -146,7 +146,7 @@ class ElectrostaticCalculator(Calculator):
                          self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
         
         if len(self.kpoints) == 0:
-            warnings.warn("WARNING, no k-points for the sum, try to decrease the value of eta")
+            warnings.warn("WARNING, no k-points for the sum, the cell is too small to compute long-range interaction with eta = {}".format(self.eta))
             self.kpoints = np.zeros((0,0), dtype = np.float64)
         else:
             self.kpoints = np.array(self.kpoints)
