@@ -3,13 +3,14 @@ import pyelectrostatic, pyelectrostatic.calculator as calc
 import sys, os
 import cellconstructor as CC, cellconstructor.Phonons
 import ase, ase.visualize
+import time
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-def test_supercell(nat = 5, supercell = (4,4,4)):
+def test_supercell(nat = 5, supercell = (3,3,3)):
     s = CC.Structure.Structure(nat)
-    s.unit_cell = np.eye(3) * 20
+    s.unit_cell = np.eye(3) * 10
     s.has_unit_cell = True
 
     for i in range(nat):
@@ -23,6 +24,7 @@ def test_supercell(nat = 5, supercell = (4,4,4)):
         
 
     calculator = calc.ElectrostaticCalculator()
+    calculator.eta = 2
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
     #calculator.kpoints = calculator.kpoints[:1, :]
     #print("kpts:", calculator.kpoints)
@@ -33,12 +35,16 @@ def test_supercell(nat = 5, supercell = (4,4,4)):
     atm = new_s.get_ase_atoms()
     atm.set_calculator(calculator)
     energy_primitive_cell = atm.get_total_energy()
+    sys.stdout.flush()
+
 
     # Use the supercell
     calculator.init(s, effective_charges, dielectric_tensor, supercell = supercell)
+
     new_s = new_s.generate_supercell(supercell)
     atm = new_s.get_ase_atoms()
     atm.set_calculator(calculator)
+    print("N kpoints: ", np.shape(calculator.kpoints))
     energy_supercell = atm.get_total_energy() / np.prod(supercell)
 
     print(energy_supercell)

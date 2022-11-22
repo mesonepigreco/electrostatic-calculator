@@ -6,6 +6,10 @@ catch
     using LinearAlgebra
 end
 
+# Enforce blas to be executed on a single thread
+using LinearAlgebra.BLAS
+LinearAlgebra.BLAS.set_num_threads(1)
+
 @doc raw"""
     get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
 
@@ -33,7 +37,6 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
     ZkkZr = zeros(T, 3)
     δrⱼᵢ = zeros(T, 3)
 
-    #println("JULIA!")
 
     for kindex ∈ 1:n_ks
         k_vect = @view k_points[kindex, :]

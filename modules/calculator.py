@@ -50,7 +50,7 @@ class ElectrostaticCalculator(Calculator):
         self.work_charges = None  # The actually initialized effective charges
         self.dielectric_tensor = None
         self.reciprocal_vectors = None
-        self.cutoff = 20 # Stop the sum when k > 5/ eta
+        self.cutoff = 10 # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
 
@@ -123,9 +123,16 @@ class ElectrostaticCalculator(Calculator):
         """
 
         # Initialize the sum over k
-        max_values = [1 + int(x) for x in np.floor(np.linalg.norm(self.reciprocal_vectors, axis = 1) * self.eta / self.cutoff)]
+        max_values = [1 + int(x) for x in np.floor(.5 + self.cutoff / (self.eta * np.linalg.norm(self.reciprocal_vectors, axis = 1)))]
         
         self.kpoints = []
+
+        #print("Init k-points:")
+        #print("reciprocal vectors:")
+        #print(self.reciprocal_vectors)
+        #print("Max values:")
+        #print(max_values)
+        #print("cutoff norm: ", self.cutoff / self.eta)
 
         for l in range(-max_values[0], max_values[0] + 1):
             for m in range(-max_values[1], max_values[1] + 1):
@@ -134,7 +141,7 @@ class ElectrostaticCalculator(Calculator):
                     kvector += m * self.reciprocal_vectors[1, :] 
                     kvector += n * self.reciprocal_vectors[2, :] 
 
-                    knorm = np.linalg.norm(kvector) / (2*np.pi)
+                    knorm = np.linalg.norm(kvector) 
                     if knorm < self.cutoff / self.eta and knorm > 1e-6:
                          self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
         

@@ -135,16 +135,16 @@ def test_julia_calculator(nat = 5):
 
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = 0.1
-    calculator.cutoff = 20
+    calculator.eta = 0.2
+    calculator.cutoff = 10
     calculator.init(old_s.copy(), effective_charges, dielectric_tensor)    
     calculator.julia_speedup = False
     atm.set_calculator(calculator)
     new_energy = atm.get_total_energy()
     new_force = atm.get_forces()
 
-    assert abs(energy - new_energy) < 1e-12, "Julia = {}, Python = {}".format(energy, new_energy)
-    assert np.max(abs(force - new_force)) < 1e-12, "Julia = {}, Python = {}".format(force, new_force)
+    assert abs(energy - new_energy) < 1e-7, "Julia = {}, Python = {}".format(energy, new_energy)
+    assert np.max(abs(force - new_force)) < 1e-7, "Julia = {}, Python = {}".format(force, new_force)
 
 def test_total_translation(plot = False):
     np.random.seed(0)
