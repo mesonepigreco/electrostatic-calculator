@@ -21,9 +21,9 @@ try:
     # Install the missing packages if required
     julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
     __JULIA_EXT__ = True
-except:
+except Exception as e:
     warnings.warn("[WARNING] julia not found, python fallback: the long-range electrostatic calculator may be slow.")
-    raise
+    raise e
     pass
 
 DEBUG = False
@@ -174,7 +174,6 @@ class ElectrostaticCalculator(Calculator):
         self.init(dynamical_matrix.structure, dynamical_matrix.effective_charges, dynamical_matrix.dielectric_tensor, dynamical_matrix.GetSupercell())
 
 
-
     def check_asr(self, threshold : float = 1e-6 ) -> None:
         """
         Check if the acoustic sum rule is enforced on the effective charges.
@@ -196,6 +195,50 @@ class ElectrostaticCalculator(Calculator):
 
         if np.linalg.norm(total_shift) > threshold:
             raise ValueError("Error, a translation is giving problems")
+
+
+    def get_longrange_phonons(self, q_point : np.ndarray, struct : CC.Structure.Structure) -> np.ndarray:
+        """
+        PHONONS
+        =======
+
+        Use the dipole moment to return the nonanalitic phonons.
+        This evaluation is correct in the limit eta -> oo 
+
+        Results
+        -------
+            dynamical_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)
+                The dynamical matrix (fc divided by the masses)
+                at the provided q point.
+                The result is in Ry/Bohr^2
+        """
+
+
+        if not __JULIA_EXT__:
+            raise NotImplementedError("Error, subroutine get_longrange_phonons works only with julia available.")
+
+    
+        atomic_pos = struct.coords * CC.Units.A_TO_BOHR
+        volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
+
+        fc_q = julia.Main.get_phonons_q(q_point, 
+            atomic_pos,
+            self.reciprocal_vectors, 
+            self.work_charges,
+            self.dielectric_tensor,
+            self.eta * CC.Units.A_TO_BOHR,
+            self.cutoff,
+            volume)
+
+        fc_q *= 2 # Ha to Ry
+
+        # Perform the division by the masses
+        _m_ = struct.get_masses_array()
+        sqrt_mass = np.sqrt(np.tile(_m_, (3,1)).T.ravel())
+        fc_q /= np.outer(sqrt_mass, sqrt_mass)
+
+        return fc_q
+        
 
     def _get_energy_force(self, struct : CC.Structure.Structure) -> None:
         """
@@ -279,7 +322,7 @@ class ElectrostaticCalculator(Calculator):
 
                     ZkkZr = ZkkZ[3*i:3*i+3, 3*j:3*j+3].dot(delta_r[j, :])
 
-                    energy -= delta_r[i, :].dot(ZkkZr) * exp_factor 
+                    energy += delta_r[i, :].dot(ZkkZr) * exp_factor 
 
                     #print("Energy k:",  delta_r[i, :].dot(ZkkZr) * exp_factor )
                     #print("Force k:", ZkkZr * cos_factor + delta_r[i, :] * ZkkZr  * kvect *  sin_factor)
@@ -305,8 +348,8 @@ class ElectrostaticCalculator(Calculator):
                         print("ZkkZ r_j = ", ZkkZr)
                         print("r_i ZkkZ r_j = ", delta_r[i, :].dot(ZkkZr))
 
-                    force[i, :] +=  ZkkZr * cos_factor
-                    force[i, :] += delta_r[i, :].dot(ZkkZr)  * kvect *  sin_factor
+                    force[i, :] -=  ZkkZr * cos_factor
+                    force[i, :] -= delta_r[i, :].dot(ZkkZr)  * kvect *  sin_factor
 
                     if DEBUG:
                         print("Current force:")
