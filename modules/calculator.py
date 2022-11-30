@@ -53,9 +53,14 @@ class ElectrostaticCalculator(Calculator):
         self.cutoff = 5 # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
-
+        self.initialized = False
 
         self.implemented_properties = ["energy", "forces"]#, "stress"]
+
+    def __setattr__(self, __name: str, __value) -> None:
+        if __name in ["eta", "cutoff"]:
+            self.initialized = False
+        return super().__setattr__(__name, __value)
 
     def init(self, reference_structure : CC.Structure.Structure, effective_charges : np.ndarray, dielectric_tensor : np.ndarray, supercell : tuple[int, int, int] = (1,1,1)) -> None:
         """
@@ -154,7 +159,7 @@ class ElectrostaticCalculator(Calculator):
         self.energy = None
         self.force = None
         self.results = {}
-
+        self.initialized = True
 
 
     def init_from_phonons(self, dynamical_matrix : CC.Phonons.Phonons) -> None : 
@@ -197,7 +202,7 @@ class ElectrostaticCalculator(Calculator):
             raise ValueError("Error, a translation is giving problems")
 
 
-    def get_longrange_phonons(self, q_point : np.ndarray, struct : CC.Structure.Structure) -> np.ndarray:
+    def get_longrange_phonons(self, q_point : np.ndarray, struct : CC.Structure.Structure, convert_from_cc = True) -> np.ndarray:
         """
         PHONONS
         =======
@@ -205,13 +210,28 @@ class ElectrostaticCalculator(Calculator):
         Use the dipole moment to return the nonanalitic phonons.
         This evaluation is correct in the limit eta -> oo 
 
+        Parameters
+        ----------
+            q_point : ndarray
+                The q vector at which the dynamical matrix is evaluated.
+                By default accepts cellconstructor units (rad / A)
+                To pass into Bohr^-1 in units of 2pi, use  convert_from_cc = False
+            struct : CC.Structure.Structure
+                The structure used to perform the calculation
+            convert_from_cc : bool
+                If true (default) use rad / A (the q points as they are stored into
+                cellconstructor Phonons)
+                Otherwhise, use the default units of this calculator (2pi / Bohr)
+
         Results
         -------
-            dynamical_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)
-                The dynamical matrix (fc divided by the masses)
-                at the provided q point.
+            force_constant_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)
+                The force constant matrix at the provided q point.
                 The result is in Ry/Bohr^2
         """
+
+        if not self.initialized:
+            raise ValueError("Error, calculator not initialized (must be redone after setting eta or cutoff)")
 
 
         if not __JULIA_EXT__:
@@ -221,23 +241,76 @@ class ElectrostaticCalculator(Calculator):
         atomic_pos = struct.coords * CC.Units.A_TO_BOHR
         volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
 
-        fc_q = julia.Main.get_phonons_q(q_point, 
+        new_q = np.copy(q_point)
+        if convert_from_cc:
+            new_q *= 2 * np.pi / CC.Units.A_TO_BOHR
+
+
+        fc_q = julia.Main.get_phonons_q(new_q, 
             atomic_pos,
             self.reciprocal_vectors, 
             self.work_charges,
             self.dielectric_tensor,
             self.eta * CC.Units.A_TO_BOHR,
-            self.cutoff,
+            np.double(self.cutoff),
             volume)
 
         fc_q *= 2 # Ha to Ry
 
         # Perform the division by the masses
-        _m_ = struct.get_masses_array()
-        sqrt_mass = np.sqrt(np.tile(_m_, (3,1)).T.ravel())
-        fc_q /= np.outer(sqrt_mass, sqrt_mass)
+        #_m_ = struct.get_masses_array()
+        #sqrt_mass = np.sqrt(np.tile(_m_, (3,1)).T.ravel())
+        #fc_q /= np.outer(sqrt_mass, sqrt_mass)
 
         return fc_q
+
+
+    def get_supercell_fc(self, structure : CC.Structure.Structure, ase_units = False) -> np.ndarray:
+        """
+        SUPERCELL FC MATRIX
+        ===================
+
+        Return the force constant matrix of the given supercell structure.
+        It works in the limit eta -> oo
+
+        Results
+        -------
+            fc_matrix : np.ndarray(size = (3*nat, 3*nat), dtype = np.double)
+                The force constant matrix in the supercell.
+                It is not divided by the masses.
+                Units are Ry/Bohr if ase_units is false,
+                eV/A otherwise
+        """
+
+        if not self.initialized:
+            raise ValueError("Error, calculator not initialized (must be redone after setting eta or cutoff)")
+
+
+        if not __JULIA_EXT__:
+            raise NotImplementedError("Error, subroutine get_longrange_phonons works only with julia available.")
+
+
+
+        atomic_pos = structure.coords * CC.Units.A_TO_BOHR
+        volume = structure.get_volume() * CC.Units.A_TO_BOHR**3
+
+        fc = julia.Main.get_realspace_fc(self.kpoints, 
+            atomic_pos,
+            self.work_charges,
+            self.dielectric_tensor,
+            self.eta * CC.Units.A_TO_BOHR,
+            volume)
+
+        # Perform the ase conversion
+        if ase_units:
+            fc *= CC.Units.HA_TO_EV / CC.Units.BORH_TO_ANGSTROM**2
+        else:
+            fc *= 2 # Ha to Ry
+
+
+        return fc
+
+
         
 
     def _get_energy_force(self, struct : CC.Structure.Structure) -> None:
@@ -245,6 +318,9 @@ class ElectrostaticCalculator(Calculator):
         Working function that evaluates the force and energy on the given configuration.
         The results are stored in self.energy and self.forces
         """
+        if not self.initialized:
+            raise ValueError("Error, calculator not initialized (must be redone after setting eta or cutoff)")
+
 
         if __JULIA_EXT__ and self.julia_speedup:
             atomic_pos = struct.coords * CC.Units.A_TO_BOHR

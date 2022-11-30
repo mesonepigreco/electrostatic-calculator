@@ -44,7 +44,7 @@ function get_phonons_q(q_point :: Vector{T}, coords :: Matrix{T}, reciprocal_vec
     
     k_vect = zeros(T, 3)
     kk_matrix = zeros(T, (3,3))
-    ZkkZ = zeros(T, (3*n_atoms, 3*n_atoms))
+    ZkkZ = zeros(Complex{T}, (3*n_atoms, 3*n_atoms))
     I = Complex{T}(1.0im)
     output_dyn = zeros(Complex{T}, (3* n_atoms, 3*n_atoms))
     for l ∈ -max_value[1] : max_value[1]
@@ -103,6 +103,57 @@ function get_phonons_q(q_point :: Vector{T}, coords :: Matrix{T}, reciprocal_vec
 
     return output_dyn .* (4 * π / volume)
 end 
+
+
+@doc raw"""
+    get_realspace_fc(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η :: T, volume :: T) :: Matrix{T} where {T <: AbstractFloat}
+
+
+
+Return the real space force constant matrix for a specific structure, 
+only keeping the simplest term which does not mix the position.
+"""
+function get_realspace_fc(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η :: T, volume :: T) :: Matrix{T} where {T <: AbstractFloat}
+    n_atoms = size(atomic_positions, 1)
+    n_ks = size(k_points, 1)
+
+
+    I = Complex{T}(1.0im)
+    kk_matrix = zeros(T, (3,3))
+    ZkkZ = zeros(T, (3*n_atoms, 3*n_atoms))
+    δrⱼᵢ = zeros(T, 3)
+
+
+    fc_matrix = zeros(T, (3*n_atoms, 3*n_atoms))
+
+    for kindex ∈ 1:n_ks
+        k_vect = @view k_points[kindex, :]
+        k² = k_vect' * k_vect
+        kϵk = k_vect' * ϵ * k_vect
+        
+        mul!(kk_matrix, k_vect, k_vect', exp.( - η^2 * k² / 2) / kϵk, 0)
+
+        ZkkZ .= Z' * kk_matrix * Z
+
+        for i ∈ 1:n_atoms
+            for j ∈ 1:n_atoms   #SPEEDUP, possibly a factor two running on j > i (but not compatible with turbo yet)
+                δrⱼᵢ .= atomic_positions[j, :] 
+                δrⱼᵢ .-= atomic_positions[i, :]
+
+                exp_factor = exp(-I * (k_vect' * δrⱼᵢ))
+                cos_factor = real(exp_factor + conj(exp_factor))
+
+                
+                ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3] .*= cos_factor
+            end
+        end
+        fc_matrix .+= ZkkZ
+    end
+
+    return fc_matrix .* (4 * π / volume)
+end
+
+
 
 @doc raw"""
     get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
