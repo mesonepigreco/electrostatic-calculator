@@ -14,7 +14,7 @@ The requirements can be installed as
 pip install -r requirements.txt
 ```
 
-But julia must be installed on the machine. 
+But **julia must be installed on the machine**. 
 Julia is not a necessary dependency (the calculator will work anyway) but it may be very slow for computing energies of big systems.
 
 
@@ -37,7 +37,7 @@ The
 
 The pyelectrostatic can be used as a simple ASE calculator.
 
-If julia is installed, you can exploit julia acceleration by running with python-jl instead of python command. 
+If julia is installed, you can exploit julia acceleration by running with **python-jl** instead of python command. 
 
 It requires to run to have effective charges and the dielectric tensor of a reference structure.
 
@@ -79,16 +79,24 @@ Here an example
 
 
 We employed cellconstructor Phonon class to read a quantum espresso dinamical matrix.
-You can setup the calculation even without one, by directly passing the centrinds, effective charges
-and dielectric tensor:
+You can setup the calculation even without one, by directly passing the centrinds, effective charges, dielectric tensor and the supercell size:
 
 .. code :: python
 
-    calculator.init(centroids = structure, effective_charges = eff_charges, dielectric_tensor = diel_tensor)
+    calculator.init(centroids = structure, effective_charges = eff_charges, dielectric_tensor = diel_tensor, supercell = (2,2,2))
 
 Where structure is a CellConstructor Structure, eff_charges is a numpy array of size (n_atoms, 3, 3)
 (atomic index, electric field polarization, cartesian coordinate of the atom)
 and diel_tensor is a symmetric 3x3 numpy array.
+
+A working example is shown in Examples/compute_energy_forces/compute_energy_forces.py
+
+Run it with
+```
+python-jl compute_energy_forces.py
+```
+
+Remember to install julia on the system. The first run needs to compile the julia code, therefore the timing for the first energy/force calculation may take few seconds.
 
 For more info, look at the tests inside the tests directory and see the calculator at work!
 
