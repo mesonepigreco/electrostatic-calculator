@@ -392,7 +392,7 @@ class ElectrostaticCalculator(Calculator):
                     delta_rij *= CC.Units.A_TO_BOHR
 
 
-                    exp_factor = np.exp(np.complex128(-1j)* kvect.dot(delta_rij))
+                    exp_factor = np.exp(np.complex128(-1j)* kvect.dot(delta_rij)) / 2.
                     cos_factor = np.real(np.complex128(exp_factor + np.conj(exp_factor)))
                     sin_factor = np.real(np.complex128(1j) * (exp_factor - np.conj(exp_factor)))
 

@@ -68,7 +68,7 @@ function get_phonons_q(q_point :: Vector{T}, coords :: Matrix{T}, reciprocal_vec
                     for i ∈ 1:n_atoms
                         for j ∈ 1:n_atoms
                             δRᵢⱼ = @views coords[i, :] - coords[j, :]
-                            exp_factor = exp(I * (k_vect' * δRᵢⱼ))
+                            exp_factor = exp(I * (k_vect' * δRᵢⱼ))/ 2
                             ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3] .*= exp_factor
                         end
                     end
@@ -91,7 +91,7 @@ function get_phonons_q(q_point :: Vector{T}, coords :: Matrix{T}, reciprocal_vec
                     for i ∈ 1:n_atoms
                         for j ∈ 1:n_atoms
                             δRᵢⱼ = @views coords[i, :] - coords[j, :]
-                            exp_factor = exp(-I * (k_vect' * δRᵢⱼ))
+                            exp_factor = exp(-I * (k_vect' * δRᵢⱼ))/ 2
                             ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3] .*= exp_factor
                         end
                     end
@@ -141,7 +141,7 @@ function get_realspace_fc(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
                 δrⱼᵢ .-= atomic_positions[i, :]
 
                 exp_factor = exp(-I * (k_vect' * δrⱼᵢ))
-                cos_factor = real(exp_factor + conj(exp_factor))
+                cos_factor = real(exp_factor + conj(exp_factor)) / 2
 
                 
                 ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3] .*= cos_factor
@@ -200,7 +200,7 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
             for j ∈ 1:n_atoms   #SPEEDUP, possibly a factor two running on j > i (but not compatible with turbo yet)
                 @views δrⱼᵢ .= atomic_positions[j, :] - atomic_positions[i, :]
 
-                exp_factor = exp(-I * (k_vect' * δrⱼᵢ))
+                exp_factor = exp(-I * (k_vect' * δrⱼᵢ)) / 2
                 cos_factor = real(exp_factor + conj(exp_factor))
                 sin_factor = real(I * (exp_factor - conj(exp_factor)))
 
