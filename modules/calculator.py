@@ -28,17 +28,16 @@ except Exception as e:
 
 DEBUG = False
 
+
 def convert_to_cc_structure(item):
-    """
-    Convert any structure (either ASE or Celconstructor) into a 
-    Cellconstructor Structure.
-    """
+    """Convert any structure into a Cellconstructor Structure."""
     if isinstance(item, ase.Atoms):
         ret = CC.Structure.Structure()
         ret.generate_from_ase_atoms(item)
         return ret
     else:
         return item
+
 
 class ElectrostaticCalculator(Calculator):
     def __init__(self, *args, **kwargs):
@@ -50,24 +49,27 @@ class ElectrostaticCalculator(Calculator):
         self.work_charges = None  # The actually initialized effective charges
         self.dielectric_tensor = None
         self.reciprocal_vectors = None
-        self.cutoff = 5 # Stop the sum when k > cutoff / eta
+        self.cutoff = 5  # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
         self.initialized = False
 
-        self.implemented_properties = ["energy", "forces"]#, "stress"]
+        self.implemented_properties = ["energy", "forces"]   # , "stress"]
 
     def __setattr__(self, __name: str, __value) -> None:
         if __name in ["eta", "cutoff"]:
             self.initialized = False
         return super().__setattr__(__name, __value)
 
-    def init(self, reference_structure : CC.Structure.Structure, effective_charges : np.ndarray, dielectric_tensor : np.ndarray, supercell : tuple[int, int, int] = (1,1,1)) -> None:
+    def init(self, reference_structure: CC.Structure.Structure,
+             effective_charges: np.ndarray,
+             dielectric_tensor: np.ndarray,
+             supercell: tuple[int, int, int] = (1, 1, 1)) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================
 
-        Setup the calculator to evaluate energy and forces. 
+        Setup the calculator to evaluate energy and forces.
         The calculator need a reference structure and effective charges of all atoms in the system.
         These quantities needs to be setup only at the beginnig.
         The reference structure should match the correct order of atoms that are provided when the calculator is executed. 
@@ -90,7 +92,6 @@ class ElectrostaticCalculator(Calculator):
             supercell : tuple
                 Optional, if provided, generates automatically the data for the calculation on a supercell.
         """
-
         self.reference_structure = reference_structure.generate_supercell(supercell)
         n_atoms = self.reference_structure.N_atoms
         n_atoms_uc = reference_structure.N_atoms
@@ -161,8 +162,7 @@ class ElectrostaticCalculator(Calculator):
         self.results = {}
         self.initialized = True
 
-
-    def init_from_phonons(self, dynamical_matrix : CC.Phonons.Phonons) -> None : 
+    def init_from_phonons(self, dynamical_matrix: CC.Phonons.Phonons) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================
@@ -173,10 +173,29 @@ class ElectrostaticCalculator(Calculator):
         see init documentation for more details
         """
 
-        assert dynamical_matrix.effective_charges is not None, "Error, the provided dynamical matrix has no effective charges"
-        assert dynamical_matrix.dielectric_tensor is not None, "Error, the provided dynamical matrix has no dielectric tensor"
+        assert dynamical_matrix.effective_charges is not None, \
+            "Error, the provided dynamical matrix has no effective charges"
+        assert dynamical_matrix.dielectric_tensor is not None, \
+            "Error, the provided dynamical matrix has no dielectric tensor"
 
-        self.init(dynamical_matrix.structure, dynamical_matrix.effective_charges, dynamical_matrix.dielectric_tensor, dynamical_matrix.GetSupercell())
+        self.init(dynamical_matrix.structure,
+                  dynamical_matrix.effective_charges,
+                  dynamical_matrix.dielectric_tensor,
+                  dynamical_matrix.GetSupercell())
+
+    def setup_reference(self, reference_structure):
+        """
+        Reshuffle the reference parameters in the correct structure.
+
+        Born effective charges and reference structure to have the atoms
+        defined in the correct primitive cell.
+        """
+        # Change the unit cell of the reference structure.
+
+        self.reference_structure.change_unit_cell(reference_structure.unit_cell)
+
+        # TODO: to be implemented
+
 
 
     def check_asr(self, threshold : float = 1e-6 ) -> None:
