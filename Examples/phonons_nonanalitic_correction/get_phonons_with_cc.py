@@ -3,7 +3,7 @@ import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 import sys, os
 
-DIRECTORY = "force_expression_30_11_2022"
+DIRECTORY = "force_expression_8_12_2022"
 
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)

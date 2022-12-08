@@ -245,3 +245,43 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
 
     return energy, force
 end
+
+
+@doc raw"""
+    setup_effective_charges(reference_coords :: Matrix{T},
+                            reference_types :: Vector{Int},
+                            reference_eff_charges:: Array{T, 3},
+                            current_coords :: Matrix{T},
+                            current_types :: Vector{Int};) where {T <: AbstractFloat}
+
+
+Setup the reference structure and effective charges to match the minimum distance.
+reference coordinates must be provided in crystal coordinates
+
+
+TODO: Not yet implemented
+"""
+function setup_effective_charges(reference_coords :: Matrix{T},
+                                 reference_types :: Vector{Int},
+                                 reference_eff_charges:: Array{T, 3},
+                                 current_coords :: Matrix{T},
+                                 current_types :: Vector{Int}; far_away :: Int = 3) where {T <: AbstractFloat}
+
+    nat_sc = size(current_coords, 1)
+    nat = size(reference_coords, 1)
+
+    r_eq = zeros(T, 3)
+
+    @assert floor(nat_sc /nat) ≈ nat_sc / nat
+
+    # Get the maximum vector size
+    for i ∈ 1:nat_sc
+        # Get the equivalent coordinates in the unit cell
+        @views r_eq .= current_coords[i, :]
+        @views r_eq .-= floor.(current_coords[i, :])
+
+        for j ∈ -far_away : far_away
+
+        end
+    end
+end

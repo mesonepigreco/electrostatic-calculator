@@ -92,7 +92,11 @@ class ElectrostaticCalculator(Calculator):
             supercell : tuple
                 Optional, if provided, generates automatically the data for the calculation on a supercell.
         """
+        self.uc_structure = reference_structure.copy()
+        self.uc_effective_charges = effective_charges.copy()
         self.reference_structure = reference_structure.generate_supercell(supercell)
+        self.supercell = supercell
+
         n_atoms = self.reference_structure.N_atoms
         n_atoms_uc = reference_structure.N_atoms
         self.effective_charges = np.zeros( (n_atoms, 3, 3), dtype = np.double)
@@ -108,8 +112,37 @@ class ElectrostaticCalculator(Calculator):
         self.reciprocal_vectors = self.reference_structure.get_reciprocal_vectors()
         #CC.Methods.get_reciprocal_vectors(self.reference_structure.unit_cell)
 
-
         self.init_kpoints()
+
+    def setup_structure(self, target_structure):
+        """Setup the effective_charge and reference structure."""
+        uc_target_cell = target_structure.unit_cell.copy()
+        for i in range(3):
+            uc_target_cell[i, :] /= self.supercell[i]
+
+        # Adjust the unit cell
+        self.uc_structure.change_unit_cell(uc_target_cell)
+
+        # Match the target structure
+        itau = target_structure.get_itau(self.uc_structure)-1
+
+        target_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell, target_structure.coords)
+        self_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell, self.uc_structure.coords)
+
+        self.reference_structure = target_structure.copy()
+        nat_sc = target_structure.N_atoms
+        for i in range(nat_sc):
+            # Identify the correct vector
+            delta_vector = [int(x + .5) for x in list(target_cov[i, :] - self_cov[itau[i], :])]
+
+            self.reference_structure.coords[i, :] = self.uc_structure.coords[itau[i], :] + \
+                np.dot(delta_vector, self.uc_structure.unit_cell)
+
+            # Prepare also the effective charges
+            self.work_charges[:, 3*i : 3*i+3] = self.uc_effective_charges[itau[i], :, :]
+
+
+
 
 
     def init_kpoints(self):
@@ -182,21 +215,6 @@ class ElectrostaticCalculator(Calculator):
                   dynamical_matrix.effective_charges,
                   dynamical_matrix.dielectric_tensor,
                   dynamical_matrix.GetSupercell())
-
-    def setup_reference(self, reference_structure):
-        """
-        Reshuffle the reference parameters in the correct structure.
-
-        Born effective charges and reference structure to have the atoms
-        defined in the correct primitive cell.
-        """
-        # Change the unit cell of the reference structure.
-
-        self.reference_structure.change_unit_cell(reference_structure.unit_cell)
-
-        # TODO: to be implemented
-
-
 
     def check_asr(self, threshold : float = 1e-6 ) -> None:
         """
@@ -339,6 +357,8 @@ class ElectrostaticCalculator(Calculator):
         """
         if not self.initialized:
             raise ValueError("Error, calculator not initialized (must be redone after setting eta or cutoff)")
+
+        self.setup_structure(struct)
 
 
         if __JULIA_EXT__ and self.julia_speedup:
