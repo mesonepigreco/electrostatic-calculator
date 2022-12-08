@@ -94,11 +94,14 @@ class ElectrostaticCalculator(Calculator):
         """
         self.uc_structure = reference_structure.copy()
         self.uc_effective_charges = effective_charges.copy()
-        self.reference_structure = reference_structure.generate_supercell(supercell)
+        self.uc_structure.coords -= np.mean(self.uc_structure.coords, axis = 0)
+
+
+        self.reference_structure = self.uc_structure.generate_supercell(supercell)
         self.supercell = supercell
 
         n_atoms = self.reference_structure.N_atoms
-        n_atoms_uc = reference_structure.N_atoms
+        n_atoms_uc = self.uc_structure.N_atoms
         self.effective_charges = np.zeros( (n_atoms, 3, 3), dtype = np.double)
         self.dielectric_tensor = dielectric_tensor.copy()
 
@@ -114,8 +117,13 @@ class ElectrostaticCalculator(Calculator):
 
         self.init_kpoints()
 
-    def setup_structure(self, target_structure):
+    def setup_structure(self, target_structure : CC.Structure.Structure):
         """Setup the effective_charge and reference structure."""
+        new_target = target_structure.copy()
+
+        total_shift = np.mean(new_target.coords, axis = 0)
+        new_target.coords -= total_shift
+
         uc_target_cell = target_structure.unit_cell.copy()
         for i in range(3):
             uc_target_cell[i, :] /= self.supercell[i]
@@ -136,7 +144,7 @@ class ElectrostaticCalculator(Calculator):
             delta_vector = [int(x + .5) for x in list(target_cov[i, :] - self_cov[itau[i], :])]
 
             self.reference_structure.coords[i, :] = self.uc_structure.coords[itau[i], :] + \
-                np.dot(delta_vector, self.uc_structure.unit_cell)
+                np.dot(delta_vector, self.uc_structure.unit_cell) + total_shift
 
             # Prepare also the effective charges
             self.work_charges[:, 3*i : 3*i+3] = self.uc_effective_charges[itau[i], :, :]
