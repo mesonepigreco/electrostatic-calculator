@@ -285,3 +285,62 @@ function setup_effective_charges(reference_coords :: Matrix{T},
         end
     end
 end
+
+
+
+@doc raw"""
+    get_equivalent_atoms(reference_coords :: Matrix{T},
+                         reference_types :: Vector{String},
+                         current_coords :: Matrix{T},
+                         current_types :: Vector{String}; far_away :: Int = 2) :: Vector{Int} where {T <: AbstractFloat}
+
+Return the index of each atom in the current_coords which is equivalent to the reference_coords.
+Both reference_coords and current_coords must be in crystal coordinates.
+reference_types and current_types are the species of each atom.
+
+The function returns a vector of indices of the equivalent atoms in the current_coords.
+"""
+function get_equivalent_atoms(reference_coords::Matrix{T},
+                              reference_types::Vector{String},
+                              current_coords::Matrix{T},
+                              current_types::Vector{String}; far_away::Int=3) :: Vector{Int} where {T<:AbstractFloat}
+
+    nat_sc = size(current_coords, 1)
+    nat = size(reference_coords, 1)
+
+    r_eq = zeros(T, 3)
+    r_eq2 = zeros(T, 3)
+
+    @assert floor(nat_sc / nat) ≈ nat_sc / nat
+
+    distances = zeros(T, nat)
+
+    itau = zeros(Int, nat_sc)
+
+    # Get the maximum vector size
+    for i ∈ 1:nat_sc
+        # Get the equivalent coordinates in the unit cell
+        @views r_eq .= current_coords[i, :]
+        @views r_eq .-= floor.(current_coords[i, :])
+
+        distances .= 1000
+        for j ∈ 1:nat
+            if current_types[i] != reference_types[j]
+                continue
+            end
+
+            for h ∈ -far_away:far_away
+                for k ∈ -far_away:far_away
+                    for l ∈ -far_away:far_away
+                        @views r_eq2 .= r_eq .+ [h, k, l]
+                        my_dist = norm(r_eq2 - reference_coords[j, :])
+                        distances[j] = min(distances[j], my_dist)
+                    end
+                end
+            end
+        end
+        itau[i] = argmin(distances)
+    end
+
+    return itau
+end

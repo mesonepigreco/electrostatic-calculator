@@ -94,21 +94,19 @@ class ElectrostaticCalculator(Calculator):
         """
         self.uc_structure = reference_structure.copy()
         self.uc_effective_charges = effective_charges.copy()
-        self.uc_structure.coords -= np.mean(self.uc_structure.coords, axis = 0)
-
 
         self.reference_structure = self.uc_structure.generate_supercell(supercell)
         self.supercell = supercell
 
         n_atoms = self.reference_structure.N_atoms
         n_atoms_uc = self.uc_structure.N_atoms
-        self.effective_charges = np.zeros( (n_atoms, 3, 3), dtype = np.double)
+        self.effective_charges = np.zeros((n_atoms, 3, 3), dtype=np.double)
         self.dielectric_tensor = dielectric_tensor.copy()
 
         for i in range(np.prod(supercell)):
-            self.effective_charges[i * n_atoms_uc : (i+1) * n_atoms_uc, :, :] = effective_charges
+            self.effective_charges[i * n_atoms_uc: (i+1) * n_atoms_uc, :, :] = effective_charges
 
-        self.work_charges = np.zeros( (3, 3*n_atoms), dtype = np.double)
+        self.work_charges = np.zeros((3, 3*n_atoms), dtype=np.double)
         for i in range(3):
             self.work_charges[i, :] = self.effective_charges[:, i, :].ravel()
 
@@ -117,12 +115,9 @@ class ElectrostaticCalculator(Calculator):
 
         self.init_kpoints()
 
-    def setup_structure(self, target_structure : CC.Structure.Structure):
-        """Setup the effective_charge and reference structure."""
+    def setup_structure(self, target_structure: CC.Structure.Structure):
+        """Set the effective_charge and reference structure."""
         new_target = target_structure.copy()
-
-        total_shift = np.mean(new_target.coords, axis = 0)
-        new_target.coords -= total_shift
 
         uc_target_cell = target_structure.unit_cell.copy()
         for i in range(3):
@@ -132,26 +127,32 @@ class ElectrostaticCalculator(Calculator):
         self.uc_structure.change_unit_cell(uc_target_cell)
 
         # Match the target structure
-        itau = target_structure.get_itau(self.uc_structure)-1
+        #target_structure.get_itau(self.uc_structure) - 1
 
-        target_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell, target_structure.coords)
-        self_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell, self.uc_structure.coords)
+        target_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell,
+                                                      target_structure.coords)
+        self_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell,
+                                                    self.uc_structure.coords)
+
+        itau = julia.Main.get_equivalent_atoms(self_cov,
+                                               self.uc_structure.atoms,
+                                               target_cov,
+                                               target_structure.atoms)
+        itau -= 1  # Convert julia to python indexing
 
         self.reference_structure = target_structure.copy()
         nat_sc = target_structure.N_atoms
         for i in range(nat_sc):
+            print(i, itau[i])
+
             # Identify the correct vector
             delta_vector = [int(x + .5) for x in list(target_cov[i, :] - self_cov[itau[i], :])]
 
             self.reference_structure.coords[i, :] = self.uc_structure.coords[itau[i], :] + \
-                np.dot(delta_vector, self.uc_structure.unit_cell) + total_shift
+                np.dot(delta_vector, self.uc_structure.unit_cell)
 
             # Prepare also the effective charges
-            self.work_charges[:, 3*i : 3*i+3] = self.uc_effective_charges[itau[i], :, :]
-
-
-
-
+            self.work_charges[:, 3*i: 3*i+3] = self.uc_effective_charges[itau[i], :, :]
 
     def init_kpoints(self):
         r"""
@@ -190,11 +191,11 @@ class ElectrostaticCalculator(Calculator):
 
                     knorm = np.linalg.norm(kvector) 
                     if knorm < self.cutoff / self.eta and knorm > 1e-6:
-                         self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
+                        self.kpoints.append(kvector / CC.Units.A_TO_BOHR)
         
         if len(self.kpoints) == 0:
             warnings.warn("WARNING, no k-points for the sum, the cell is too small to compute long-range interaction with eta = {}".format(self.eta))
-            self.kpoints = np.zeros((0,0), dtype = np.float64)
+            self.kpoints = np.zeros((0, 0), dtype=np.float64)
         else:
             self.kpoints = np.array(self.kpoints)
 
@@ -224,12 +225,12 @@ class ElectrostaticCalculator(Calculator):
                   dynamical_matrix.dielectric_tensor,
                   dynamical_matrix.GetSupercell())
 
-    def check_asr(self, threshold : float = 1e-6 ) -> None:
+    def check_asr(self, threshold: float = 1e-6) -> None:
         """
         Check if the acoustic sum rule is enforced on the effective charges.
+
         This is very important to properly compute the forces on the structure.
         """
-
         nat = self.reference_structure.N_atoms
         for i in range(3):
             for j in range(3):
@@ -246,8 +247,7 @@ class ElectrostaticCalculator(Calculator):
         if np.linalg.norm(total_shift) > threshold:
             raise ValueError("Error, a translation is giving problems")
 
-
-    def get_longrange_phonons(self, q_point : np.ndarray, struct : CC.Structure.Structure, convert_from_cc = True) -> np.ndarray:
+    def get_longrange_phonons(self, q_point: np.ndarray, struct: CC.Structure.Structure, convert_from_cc = True) -> np.ndarray:
         """
         PHONONS
         =======
@@ -274,7 +274,6 @@ class ElectrostaticCalculator(Calculator):
                 The force constant matrix at the provided q point.
                 The result is in Ry/Bohr^2
         """
-
         if not self.initialized:
             raise ValueError("Error, calculator not initialized (must be redone after setting eta or cutoff)")
 
@@ -355,12 +354,10 @@ class ElectrostaticCalculator(Calculator):
 
         return fc
 
-
-        
-
-    def _get_energy_force(self, struct : CC.Structure.Structure) -> None:
+    def _get_energy_force(self, struct: CC.Structure.Structure) -> None:
         """
         Working function that evaluates the force and energy on the given configuration.
+
         The results are stored in self.energy and self.forces
         """
         if not self.initialized:
@@ -368,36 +365,33 @@ class ElectrostaticCalculator(Calculator):
 
         self.setup_structure(struct)
 
-
         if __JULIA_EXT__ and self.julia_speedup:
             atomic_pos = struct.coords * CC.Units.A_TO_BOHR
             volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
             ref_structure = self.reference_structure.coords * CC.Units.A_TO_BOHR
 
             energy, force = julia.Main.get_energy_forces(self.kpoints, 
-                atomic_pos,
-                ref_structure, 
-                self.work_charges,
-                self.dielectric_tensor,
-                self.eta * CC.Units.A_TO_BOHR,
-                volume)
+                                                         atomic_pos,
+                                                         ref_structure,
+                                                         self.work_charges,
+                                                         self.dielectric_tensor,
+                                                         self.eta * CC.Units.A_TO_BOHR,
+                                                         volume)
 
             energy *= CC.Units.HA_TO_EV
             force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
-            self.energy = energy 
-            self.force = force 
+            self.energy = energy
+            self.force = force
             return
 
         # Fallback to the slow python code
         n_atoms = self.reference_structure.N_atoms
 
-        delta_r = struct.coords - self.reference_structure.coords  
+        delta_r = struct.coords - self.reference_structure.coords
 
         # Remove the global translations (ASR)
-        asr_delta_r = np.mean(delta_r, axis = 0)
-        delta_r[:,:] -= asr_delta_r
-
-
+        asr_delta_r = np.mean(delta_r, axis=0)
+        delta_r[:, :] -= asr_delta_r
         delta_r *= CC.Units.A_TO_BOHR
 
         n_kpoints = self.kpoints.shape[0]
