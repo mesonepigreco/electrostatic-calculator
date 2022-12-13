@@ -140,19 +140,27 @@ class ElectrostaticCalculator(Calculator):
                                                target_structure.atoms)
         itau -= 1  # Convert julia to python indexing
 
+        # Assert that itau array of int contains each element the same number of times
+        assert np.all(np.bincount(itau) == np.bincount(itau)[0]), \
+            "Error, the itau has not the correct count: {}".format(itau)
+
         self.reference_structure = target_structure.copy()
         nat_sc = target_structure.N_atoms
         for i in range(nat_sc):
-            print(i, itau[i])
-
             # Identify the correct vector
-            delta_vector = [int(x + .5) for x in list(target_cov[i, :] - self_cov[itau[i], :])]
+            delta_vector = [round(x)
+                            for x in list(target_cov[i, :] - self_cov[itau[i], :])]
 
-            self.reference_structure.coords[i, :] = self.uc_structure.coords[itau[i], :] + \
+            self.reference_structure.coords[i, :] = \
+                self.uc_structure.coords[itau[i], :] + \
                 np.dot(delta_vector, self.uc_structure.unit_cell)
 
+            # print("Atom:", target_structure.atoms[i], i, itau[i],
+            #       delta_vector, target_cov[i, :], self_cov[itau[i], :])
+
             # Prepare also the effective charges
-            self.work_charges[:, 3*i: 3*i+3] = self.uc_effective_charges[itau[i], :, :]
+            self.work_charges[:, 3*i: 3*i+3] = \
+                self.uc_effective_charges[itau[i], :, :]
 
     def init_kpoints(self):
         r"""
@@ -174,13 +182,6 @@ class ElectrostaticCalculator(Calculator):
         max_values = [1 + int(x) for x in np.floor(.5 + self.cutoff / (self.eta * np.linalg.norm(self.reciprocal_vectors, axis = 1)))]
         
         self.kpoints = []
-
-        #print("Init k-points:")
-        #print("reciprocal vectors:")
-        #print(self.reciprocal_vectors)
-        #print("Max values:")
-        #print(max_values)
-        #print("cutoff norm: ", self.cutoff / self.eta)
 
         for l in range(-max_values[0], max_values[0] + 1):
             for m in range(-max_values[1], max_values[1] + 1):
