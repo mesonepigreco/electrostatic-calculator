@@ -3,13 +3,13 @@ import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 import sys, os
 
-DIRECTORY = "force_expression_8_12_2022"
+DIRECTORY = "dyn_electrostatic_eta=4.0"
 
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
 
 # Now create the calculator
-SCELL = 2
+SCELL = 4
 
 if len(sys.argv) == 2:
     SCELL = int(sys.argv[1])

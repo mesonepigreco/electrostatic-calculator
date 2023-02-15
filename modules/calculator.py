@@ -39,7 +39,79 @@ def convert_to_cc_structure(item):
         return item
 
 
+class CompositeCalculator(Calculator):
+    """
+    Create a calculator that combines two different calculators.
+
+    This calculator adds the energy and forces of two or more different calculators.
+    """
+
+    def __init__(self, list_of_calculators: list, *args, **kwargs):
+        """
+        Initialize the calculator.
+
+        :param list_of_calculators: The list of calculators to combine.
+        """
+        Calculator.__init__(self, *args, **kwargs)
+
+        self.list_of_calculators = list_of_calculators
+
+        # Setup the implemented properties that are in common between all calculators
+        self.implemented_properties = []
+
+        # Fill self.implemented_properties with the intersection
+        # of the variable implemented_properties of each element in list_of_calculators
+        for calc in self.list_of_calculators:
+            if len(self.implemented_properties) == 0:
+                self.implemented_properties = calc.implemented_properties
+            else:
+                self.implemented_properties = \
+                    list(set(self.implemented_properties)
+                         .intersection(calc.implemented_properties))
+
+        self.implemented_properties = list(set(self.implemented_properties))
+
+    def calculate(self, atoms=None, *args, **kwargs):
+        """
+        Calculate the energy and forces of the system.
+
+        :param atoms: The atoms object to calculate.
+        """
+        # Call the calculate method of all the calculators
+        super().calculate(atoms, *args, **kwargs)
+
+        # Copy the atoms to avoid calculator override
+        ss = CC.Structure.Structure()
+        ss.generate_from_ase_atoms(atoms)
+        tmp_atoms = ss.get_ase_atoms()
+
+        for i, calc in enumerate(self.list_of_calculators):
+            tmp_atoms.set_calculator(calc)
+            if "energy" in self.implemented_properties:
+                if i == 0:
+                    self.results["energy"] = tmp_atoms.get_potential_energy()
+                else:
+                    self.results["energy"] += tmp_atoms.get_potential_energy()
+            if "forces" in self.implemented_properties:
+                if i == 0:
+                    self.results["forces"] = tmp_atoms.get_forces()
+                else:
+                    self.results["forces"] += tmp_atoms.get_forces()
+            if "stress" in self.implemented_properties:
+                if i == 0:
+                    self.results["stress"] = tmp_atoms.get_stress()
+                else:
+                    self.results["stress"] += tmp_atoms.get_stress()
+
+        atoms.set_calculator(self)
+
+
 class ElectrostaticCalculator(Calculator):
+    """
+    Calculator for long-range electrostatic interaction.
+
+    Long range calculator.
+    """
     def __init__(self, *args, **kwargs):
         Calculator.__init__(self, *args, **kwargs)
 
@@ -64,6 +136,7 @@ class ElectrostaticCalculator(Calculator):
     def init(self, reference_structure: CC.Structure.Structure,
              effective_charges: np.ndarray,
              dielectric_tensor: np.ndarray,
+             unique_atom_element : str,
              supercell: tuple[int, int, int] = (1, 1, 1)) -> None:
         """
         INITIALIZE THE CALCULATOR
@@ -91,8 +164,28 @@ class ElectrostaticCalculator(Calculator):
                 The 3x3 matrix containing the high-frequency static dielectric tensor.
             supercell : tuple
                 Optional, if provided, generates automatically the data for the calculation on a supercell.
+            unique_atom_element : str
+                The atomic name of the species used to identify the origin of the structure.
+                There must be just one per cell
+                TODO: find a better way!
         """
+
         self.uc_structure = reference_structure.copy()
+        self.unique_atom_element = unique_atom_element
+
+        # Shift the structure to have the unique element at the center
+        unique_index = -1
+        for i in range(self.uc_structure.N_atoms):
+            if self.uc_structure.atoms[i] == unique_atom_element:
+                unique_index = i
+                break
+
+        if unique_index == -1:
+            raise ValueError("The unique atom element was not found in the structure!")
+
+        self.uc_structure.coords[:, :] -= np.tile(self.uc_structure.coords[unique_index, :],
+                                                  (self.uc_structure.N_atoms, 1))
+
         self.uc_effective_charges = effective_charges.copy()
 
         self.reference_structure = self.uc_structure.generate_supercell(supercell)
@@ -119,6 +212,22 @@ class ElectrostaticCalculator(Calculator):
         """Set the effective_charge and reference structure."""
         new_target = target_structure.copy()
 
+        if target_structure.N_atoms != self.uc_structure.N_atoms * np.prod(self.supercell):
+            raise ValueError("The target structure has a different number of atoms! Check if the supercell is {}".format(self.supercell))
+
+        # Shift the structure to have the unique element at the center
+        unique_index = -1
+        for i in range(new_target.N_atoms):
+            if new_target.atoms[i] == self.unique_atom_element:
+                unique_index = i
+                break
+
+        if unique_index == -1:
+            raise ValueError("The unique atom element {} was not found in the structure!".format(self.unique_atom_element))
+
+        new_target.coords[:, :] -= np.tile(new_target.coords[unique_index, :],
+                                           (new_target.N_atoms, 1))
+
         uc_target_cell = target_structure.unit_cell.copy()
         for i in range(3):
             uc_target_cell[i, :] /= self.supercell[i]
@@ -130,22 +239,24 @@ class ElectrostaticCalculator(Calculator):
         #target_structure.get_itau(self.uc_structure) - 1
 
         target_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell,
-                                                      target_structure.coords)
+                                                      new_target.coords)
         self_cov = CC.Methods.covariant_coordinates(self.uc_structure.unit_cell,
                                                     self.uc_structure.coords)
 
         itau = julia.Main.get_equivalent_atoms(self_cov,
                                                self.uc_structure.atoms,
                                                target_cov,
-                                               target_structure.atoms)
+                                               new_target.atoms)
         itau -= 1  # Convert julia to python indexing
 
         # Assert that itau array of int contains each element the same number of times
-        assert np.all(np.bincount(itau) == np.bincount(itau)[0]), \
-            "Error, the itau has not the correct count: {}".format(itau)
+        if not np.all(np.bincount(itau) == np.bincount(itau)[0]):
+            new_target.save_scf("target_structure.scf")
+            self.uc_structure.save_scf("reference_structure.scf")
+            raise ValueError(f"The target structure does not match the reference structure.")
 
-        self.reference_structure = target_structure.copy()
-        nat_sc = target_structure.N_atoms
+        self.reference_structure = new_target
+        nat_sc = new_target.N_atoms
         for i in range(nat_sc):
             # Identify the correct vector
             delta_vector = [round(x)
