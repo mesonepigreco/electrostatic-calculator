@@ -162,7 +162,9 @@ end
 Compute the electrostatic energy and forces.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
 """
-function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T) where {T <: AbstractFloat}
+function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
+    reference_struct :: Matrix{T}, Z :: Matrix{T}, 
+    ϵ :: Matrix{T}, η:: T, volume :: T) where {T <: AbstractFloat}
 
     n_atoms = size(atomic_positions, 1)
     n_ks = size(k_points, 1)
@@ -180,7 +182,10 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
     kk_matrix = zeros(T, (3,3))
     ZkkZ = zeros(T, (3*n_atoms, 3*n_atoms))
     ZkkZr = zeros(T, 3)
+    ZrrZ = zeros(T, (3,3))
+    rr_mat = zeros(T, (3,3))
     δrⱼᵢ = zeros(T, 3)
+    stress_tensor = zeros(T, (3,3))
 
 
     for kindex ∈ 1:n_ks
@@ -191,6 +196,7 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
         mul!(kk_matrix, k_vect, k_vect', exp.( - η^2 * k² / 2) / kϵk, 0)
 
         ZkkZ .= Z' * kk_matrix * Z
+
 
         #println()
         #println("k point: $k_vect")
@@ -213,7 +219,19 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
                 @views mul!(ZkkZr, ZkkZ[3*(i-1)+1 : 3*(i-1)+3, 3*(j-1)+1 : 3*(j-1)+3], δr[j, :])
                 rZkkZr = @views δr[i, :]' * ZkkZr
 
+                rr_mat .= δr * δr'
+
+                @views ZrrZ .= Z[:, 3*(i-1)+1 : 3*(i-1)+3] * rr_mat * Z[:, 3*(j-1)+1 : 3*(j-1)+3]'
+
                 energy += rZkkZr * exp_factor
+                for α in 1:3
+                    for β in 1:3
+                        @views stress_tensor[β, α] .-= δr[i, α] * ZkkZr[β] / (volume) * cos_factor
+                        @views stress_tensor[β, α] .+= ZrrZ[β, :]' * kk_matrix[:, α] * cos_factor
+                        @views stress_tensor[β, α] .-= rZkkZr * cos_factor * k_vect[α] * k_vect[β] * η^2 / 2
+                        @views stress_tensor[β, α] .-= (rZkkZr * k_vect[α]) .* (ϵ[β, :]' * k_vect) * cos_factor / kϵk
+                    end
+                end 
 
                 #println("r_i ZkkZ r_j = $rZkkZr")
 
@@ -225,6 +243,12 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
                 #println()
             end
         end
+    end
+
+    # Prepare the calculation of the stress_tensor
+    stress_tensor .+= stress_tensor'
+    for α in 1:3
+        stress_tensor[α,α] += real(energy) / volume
     end
 
     # Apply the acoustic sum rule
@@ -239,9 +263,17 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
     #println("total force = ")
     #println("$force")
 
-    # Get the total energy and forces
+    # Complete the calculation of the stress tensor 
+    stress_tensor .+= stress_tensor'
+    for μ in 1:3
+        stress_tensor[μ, μ] += energy 
+
+
+    # Get the total energy and forces and stress
     energy = real(energy) * 4 * π / volume
     force .*= 4 * π / volume
+    stress_tensor .*= 4 * π / volume
+
 
     return energy, force
 end
