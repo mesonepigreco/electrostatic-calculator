@@ -137,7 +137,7 @@ class ElectrostaticCalculator(Calculator):
              effective_charges: np.ndarray,
              dielectric_tensor: np.ndarray,
              unique_atom_element : str,
-             supercell: tuple[int, int, int] = (1, 1, 1)) -> None:
+             supercell: tuple = (1, 1, 1)) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================

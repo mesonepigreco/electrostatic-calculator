@@ -22,7 +22,7 @@ def test_1D(plot = False):
 
     calculator = calc.ElectrostaticCalculator()
     calculator.eta = 4
-    calculator.init(s.copy(), effective_charges, dielectric_tensor)    
+    calculator.init(s.copy(), effective_charges, dielectric_tensor, unique_atom_element="H")    
     print("kpts:", calculator.kpoints)
 
     n_steps = 20

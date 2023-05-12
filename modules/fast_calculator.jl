@@ -156,21 +156,25 @@ end
 
 
 @doc raw"""
-    get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
-
+    get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
+        reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T},
+        η :: T, volume :: T)
 
 Compute the electrostatic energy and forces.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
 
 It returns energy, forces and stress tensor.
 """
-get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
-    nat = shape(atomic_positions, 1)
+function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
+    reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T},
+    η :: T, volume :: T) where {T <: AbstractFloat}
+    nat = size(atomic_positions, 1)
     forces = zeros(T, (nat, 3))
     stress = zeros(T, (3,3))
 
     energy = get_energy_forces!(forces, stress,
-        k_points, atomic_positions, Z, ϵ)
+        k_points, atomic_positions, 
+        reference_struct, Z, ϵ, η, volume)
 
     return energy, forces, stress
 end
@@ -178,8 +182,7 @@ end
 
 
 @doc raw"""
-    get_energy_forces!(forces:: Matrix{T}, stress :: Matrix{T}, k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
-
+    get_energy_forces!(force :: Matrix{T}, stress_tensor :: Matrix{T}, k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T) 
 
 Compute the electrostatic energy, forces and stress tensor.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
@@ -294,6 +297,7 @@ function get_energy_forces!(force :: Matrix{T}, stress_tensor :: Matrix{T},
     stress_tensor .+= stress_tensor'
     for μ in 1:3
         stress_tensor[μ, μ] += energy 
+    end
 
 
     # Get the total energy and forces and stress
