@@ -161,10 +161,35 @@ end
 
 Compute the electrostatic energy and forces.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
+
+It returns energy, forces and stress tensor.
 """
-function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
+get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
+    nat = shape(atomic_positions, 1)
+    forces = zeros(T, (nat, 3))
+    stress = zeros(T, (3,3))
+
+    energy = get_energy_forces!(forces, stress,
+        k_points, atomic_positions, Z, ϵ)
+
+    return energy, forces, stress
+end
+
+
+
+@doc raw"""
+    get_energy_forces!(forces:: Matrix{T}, stress :: Matrix{T}, k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
+
+
+Compute the electrostatic energy, forces and stress tensor.
+The input must be in Ha atomic units and the output will be in Ha atomic units.
+
+It returns the energy as a value, while forces and stress are computed inplace.
+"""
+function get_energy_forces!(force :: Matrix{T}, stress_tensor :: Matrix{T}, 
+    k_points :: Matrix{T}, atomic_positions :: Matrix{T}, 
     reference_struct :: Matrix{T}, Z :: Matrix{T}, 
-    ϵ :: Matrix{T}, η:: T, volume :: T) where {T <: AbstractFloat}
+    ϵ :: Matrix{T}, η:: T, volume :: T) :: T where {T <: AbstractFloat}
 
     n_atoms = size(atomic_positions, 1)
     n_ks = size(k_points, 1)
@@ -178,14 +203,16 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
 
     energy = zero(Complex{T})  
     I = Complex{T}(1.0im)
-    force = zeros(T, (n_atoms, 3))
     kk_matrix = zeros(T, (3,3))
     ZkkZ = zeros(T, (3*n_atoms, 3*n_atoms))
     ZkkZr = zeros(T, 3)
     ZrrZ = zeros(T, (3,3))
     rr_mat = zeros(T, (3,3))
     δrⱼᵢ = zeros(T, 3)
-    stress_tensor = zeros(T, (3,3))
+
+    # Clean force and stress tensor
+    force .= 0
+    stress_tensor .= 0
 
 
     for kindex ∈ 1:n_ks
@@ -275,7 +302,7 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
     stress_tensor .*= 4 * π / volume
 
 
-    return energy, force
+    return energy
 end
 
 

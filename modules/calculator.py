@@ -126,7 +126,7 @@ class ElectrostaticCalculator(Calculator):
         self.julia_speedup = True  
         self.initialized = False
 
-        self.implemented_properties = ["energy", "forces"]   # , "stress"]
+        self.implemented_properties = ["energy", "forces" , "stress"]
 
     def __setattr__(self, __name: str, __value) -> None:
         if __name in ["eta", "cutoff"]:
@@ -482,7 +482,7 @@ class ElectrostaticCalculator(Calculator):
             volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
             ref_structure = self.reference_structure.coords * CC.Units.A_TO_BOHR
 
-            energy, force = julia.Main.get_energy_forces(self.kpoints, 
+            energy, force, stress = julia.Main.get_energy_forces(self.kpoints, 
                                                          atomic_pos,
                                                          ref_structure,
                                                          self.work_charges,
@@ -492,8 +492,10 @@ class ElectrostaticCalculator(Calculator):
 
             energy *= CC.Units.HA_TO_EV
             force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
+            stress *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
             self.energy = energy
             self.force = force
+            self.stress = stress
             return
 
         # Fallback to the slow python code
@@ -620,6 +622,7 @@ class ElectrostaticCalculator(Calculator):
 
         self.results["energy"] = self.energy
         self.results["forces"] = self.force
+        self.results["stress"] = self.stress
         #self.results["dipole"] = self.get_dipole() 
 
 
