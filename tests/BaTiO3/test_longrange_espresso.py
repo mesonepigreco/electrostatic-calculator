@@ -6,6 +6,10 @@ import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 
 def test_espresso():
+    # Change directory to the local directory where the script is
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
     calc = calculator.ElectrostaticCalculator()
     calc.eta = 8
     dyn  = CC.Phonons.Phonons("BaTiO3_")
