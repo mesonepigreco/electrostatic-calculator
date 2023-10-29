@@ -41,6 +41,9 @@ jobs:
         cd CellConstructor
         python setup.py install --user
         cd ..
+
+        # Avoid to include CellConstructor in the test
+        rm -r CellConstructor
         
         # Install julia requirements
         python -c 'import julia; julia.install()'
@@ -53,7 +56,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install the package
       run: |
-        pip install .
+        python setup.py install --user
     - name: Test with pytest
       run: |
         pytest
