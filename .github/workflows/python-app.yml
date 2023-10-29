@@ -31,18 +31,20 @@ jobs:
         
         # Install the fortran compiler with lapack and blas
         sudo apt-get install gfortran libblas-dev liblapack-dev
+        
         pip install numpy
+        pip install ase
+        pip install julia
 
         # Clone and install cellconstructor
         git clone https://github.com/mesonepigreco/CellConstructor.git
         cd CellConstructor
-        pip install .
+        python setup.py install --user
         cd ..
         
         # Install julia requirements
         python -c 'import julia; julia.install()'
         
-        pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
