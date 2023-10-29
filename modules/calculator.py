@@ -343,7 +343,8 @@ class ElectrostaticCalculator(Calculator):
         self.results = {}
         self.initialized = True
 
-    def init_from_phonons(self, dynamical_matrix: CC.Phonons.Phonons) -> None:
+    def init_from_phonons(self, dynamical_matrix: CC.Phonons.Phonons,
+                          unique_atom_element : str = None) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================
@@ -352,6 +353,17 @@ class ElectrostaticCalculator(Calculator):
         Everything is read from the dynamical matrix, included the supercell.
 
         see init documentation for more details
+
+
+        Parameters
+        ----------
+
+        - dynamical_matrix: 
+            the dynamical matrix of the system
+        - unique_atom_element: 
+            the string of unique atom element in the structure 
+            (default: None, the first atom is used)
+
         """
 
         assert dynamical_matrix.effective_charges is not None, \
@@ -359,10 +371,15 @@ class ElectrostaticCalculator(Calculator):
         assert dynamical_matrix.dielectric_tensor is not None, \
             "Error, the provided dynamical matrix has no dielectric tensor"
 
+        un = unique_atom_element
+        if unique_atom_element is None:
+            un = dynamical_matrix.structure.atoms[0]
+
         self.init(dynamical_matrix.structure,
                   dynamical_matrix.effective_charges,
                   dynamical_matrix.dielectric_tensor,
-                  dynamical_matrix.GetSupercell())
+                  unique_atom_element=un,
+                  supercell=dynamical_matrix.GetSupercell())
 
     def check_asr(self, threshold: float = 1e-6) -> None:
         """

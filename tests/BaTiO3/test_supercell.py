@@ -25,21 +25,30 @@ def test_supercell(nat = 5, supercell = (3,3,3)):
 
     calculator = calc.ElectrostaticCalculator()
     calculator.eta = 2
-    calculator.init(s.copy(), effective_charges, dielectric_tensor)    
+    calculator.init(s.copy(), effective_charges, dielectric_tensor, 
+                    unique_atom_element="H")    
     #calculator.kpoints = calculator.kpoints[:1, :]
     #print("kpts:", calculator.kpoints)
 
     new_s = s.copy()
-    new_s.coords[0, 0] += 1
+    new_s.coords[0, 0] += 0.2
 
     atm = new_s.get_ase_atoms()
     atm.set_calculator(calculator)
+
+    print("Original coordinates")
+    print(s.coords)
+    print("New coordinates")
+    print(new_s.coords)
+    print()
     energy_primitive_cell = atm.get_total_energy()
     sys.stdout.flush()
 
 
     # Use the supercell
-    calculator.init(s, effective_charges, dielectric_tensor, supercell = supercell)
+    calculator.init(s, effective_charges, dielectric_tensor,
+                    unique_atom_element="H",
+                    supercell = supercell)
 
     new_s = new_s.generate_supercell(supercell)
     atm = new_s.get_ase_atoms()
