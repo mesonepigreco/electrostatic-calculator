@@ -30,6 +30,7 @@ jobs:
         sudo apt-get update
         # Install the fortran compiler with lapack and blas
         sudo apt-get install gfortran libblas-dev liblapack-dev
+        pip install numpy
         pip install -r requirements.txt
     - name: Lint with flake8
       run: |
