@@ -34,6 +34,7 @@ jobs:
         
         pip install numpy
         pip install ase
+        pip install julia
 
         # Clone and install cellconstructor
         git clone https://github.com/mesonepigreco/CellConstructor.git
