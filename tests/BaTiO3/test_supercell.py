@@ -31,7 +31,7 @@ def test_supercell(nat = 5, supercell = (3,3,3)):
     #print("kpts:", calculator.kpoints)
 
     new_s = s.copy()
-    new_s.coords[0, 0] += 0.2
+    new_s.coords[0, 0] += 0.15
 
     atm = new_s.get_ase_atoms()
     atm.set_calculator(calculator)

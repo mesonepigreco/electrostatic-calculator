@@ -163,7 +163,7 @@ class ElectrostaticCalculator(Calculator):
     def init(self, reference_structure: CC.Structure.Structure,
              effective_charges: np.ndarray,
              dielectric_tensor: np.ndarray,
-             unique_atom_element : str,
+             unique_atom_element : str = None,
              supercell: tuple[int, int, int] = (1, 1, 1)) -> None:
         """
         INITIALIZE THE CALCULATOR
@@ -194,16 +194,19 @@ class ElectrostaticCalculator(Calculator):
             unique_atom_element : str
                 The atomic name of the species used to identify the origin of the structure.
                 There must be just one per cell
+                If None, the first atom is used.
                 TODO: find a better way!
         """
 
         self.uc_structure = reference_structure.copy()
         self.unique_atom_element = unique_atom_element
+        if self.unique_atom_element is None:
+            self.unique_atom_element = self.uc_structure.atoms[0]
 
         # Shift the structure to have the unique element at the center
         unique_index = -1
         for i in range(self.uc_structure.N_atoms):
-            if self.uc_structure.atoms[i] == unique_atom_element:
+            if self.uc_structure.atoms[i] == self.unique_atom_element:
                 unique_index = i
                 break
 
