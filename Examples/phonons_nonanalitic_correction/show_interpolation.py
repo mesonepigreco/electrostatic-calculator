@@ -17,7 +17,7 @@ NQIRR_BIG = 10
 
 ELE_666 = None
 #ELE_666 = "fourier_dyn/dyn_cc_6x6x6_"#"4x4x4_electrostatic/dyn"
-#NQIRR_BIGG = 20
+NQIRR_BIGG = 20
 
 PATH= "GX"
 N_POINTS = 1000
