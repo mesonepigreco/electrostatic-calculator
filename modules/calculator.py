@@ -15,6 +15,16 @@ from typing import List, Union
 
 
 __JULIA_EXT__ = False
+JULIA_ERROR = """
+Error in initializing the Julia extension.
+    Please install Julia and the required modules with:
+
+    $ pip install julia
+
+    The code will run without the Julia extension, but it will be slower (10-100 times).
+
+    Details on error: {}
+"""
 try:
     import julia, julia.Main
 
@@ -22,9 +32,26 @@ try:
     julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
     __JULIA_EXT__ = True
 except Exception as e:
-    warnings.warn("[WARNING] julia not found, python fallback: the long-range electrostatic calculator may be slow.")
-    raise e
-    pass
+    try:
+        import julia
+        try:
+            from julia.api import Julia
+            jl = Julia(compiled_modules=False)
+            import julia.Main
+            julia.Main.include(os.path.join(os.path.dirname(__file__),
+                "fast_calculator.jl"))
+            __JULIA_EXT__ = True
+        except:
+            # Install the required modules
+            julia.install()
+            try:
+                julia.Main.include(os.path.join(os.path.dirname(__file__),
+                    "fast_calculator.jl"))
+                __JULIA_EXT__ = True
+            except Exception as e:
+                warnings.warn(JULIA_ERROR.format(e))
+    except Exception as e:
+        warnings.warn(JULIA_ERROR.format(e))
 
 DEBUG = False
 
