@@ -46,8 +46,7 @@ and these information can be read from the standard Quantum-Espresso dynamical m
 
 Here an example
 
-.. code :: python
-
+```
     # Load CellConstructor to import the quantum-espresso dynamical matrix
     import cellconstructor as CC, cellconstructor.Phonons    
     import pyelectrostatic, pyelectrostatic.calculator as calc
@@ -75,15 +74,15 @@ Here an example
     print("Energy = ", ase_atoms.get_total_energy(), " eV")
     print("Total forces [eV/A] is:")
     print(ase_atos.get_forces())
-
+```
 
 
 We employed cellconstructor Phonon class to read a quantum espresso dinamical matrix.
 You can setup the calculation even without one, by directly passing the centrinds, effective charges, dielectric tensor and the supercell size:
 
-.. code :: python
-
+```
     calculator.init(centroids = structure, effective_charges = eff_charges, dielectric_tensor = diel_tensor, supercell = (2,2,2))
+```
 
 Where structure is a CellConstructor Structure, eff_charges is a numpy array of size (n_atoms, 3, 3)
 (atomic index, electric field polarization, cartesian coordinate of the atom)

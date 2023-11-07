@@ -94,6 +94,14 @@ def test_2D(plot = False, nat = 5):
         x_values[i] = s.coords[0,coordinate]
         print()
 
+    assert_test = -np.gradient(energy, x_values)
+    assert_test = assert_test[1:-1]
+    assert_test2 = forces[:, 0,coordinate]
+    assert_test2 = assert_test2[1:-1]
+    tolval = np.max(np.abs(assert_test))/50
+
+    assert np.allclose(assert_test, assert_test2, atol = tolval), "Forces are not correct"
+
     if plot:
         plt.figure()
         plt.title("{} particles".format(nat))
@@ -127,7 +135,7 @@ def test_julia_calculator(nat = 5):
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
     old_s = s.copy()
 
-    s.coords += np.random.normal(size = s.coords.shape, scale = 0.1) # This is the culprit
+    s.coords += np.random.normal(size = s.coords.shape, scale = 0.03) # This is the culprit
 
     atm = s.get_ase_atoms()
     atm.set_calculator(calculator)
@@ -362,7 +370,7 @@ def test_one_atom_model(plot = False):
 if __name__ == "__main__":
     test_julia_calculator()
     #test_1D(True)
-    #test_2D(True)
+    test_2D(True)
     test_total_translation(True)
     #test_unit_cell(plot = True)
     #test_one_atom_model(plot = True)
