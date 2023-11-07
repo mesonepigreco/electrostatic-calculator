@@ -15,16 +15,33 @@ from typing import List, Union
 
 
 __JULIA_EXT__ = False
+__JULIA_ERROR__ = ""
 try:
     import julia, julia.Main
-
-    # Install the missing packages if required
-    julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
+    julia.Main.include(os.path.join(os.path.dirname(__file__), 
+        "fast_calculator.jl"))
     __JULIA_EXT__ = True
-except Exception as e:
-    warnings.warn("[WARNING] julia not found, python fallback: the long-range electrostatic calculator may be slow.")
-    raise e
-    pass
+except:
+    try:
+        import julia
+        try:
+            from julia.api import Julia
+            jl = Julia(compiled_modules=False)
+            import julia.Main
+            julia.Main.include(os.path.join(os.path.dirname(__file__),
+                "fast_calculator.jl"))
+            __JULIA_EXT__ = True
+        except:
+            # Install the required modules
+            julia.install()
+            try:
+                julia.Main.include(os.path.join(os.path.dirname(__file__),
+                    "fast_calculator.jl"))
+                __JULIA_EXT__ = True
+            except Exception as e:
+                warnings.warn("Julia extension not available.\nError: {}".format(e))
+    except Exception as e:
+        warnings.warn("Julia extension not available.\nError: {}".format(e))
 
 DEBUG = False
 
