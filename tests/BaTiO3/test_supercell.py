@@ -12,6 +12,11 @@ def test_supercell(nat = 5, supercell = (3,3,3)):
     s = CC.Structure.Structure(nat)
     s.unit_cell = np.eye(3) * 5
     s.has_unit_cell = True
+    s.atoms[0] = "Si"
+    s.atoms[1] = "C"
+    s.atoms[2] = "H"
+    s.atoms[3] = "N"
+    s.atoms[4] = "O"
 
     for i in range(nat):
         s.coords[i, :] = np.random.uniform(size = 3)
