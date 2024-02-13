@@ -27,9 +27,8 @@ Error in initializing the Julia extension.
 """
 try:
     import julia, julia.Main
-
-    # Install the missing packages if required
-    julia.Main.include(os.path.join(os.path.dirname(__file__), "fast_calculator.jl"))
+    julia.Main.include(os.path.join(os.path.dirname(__file__), 
+        "fast_calculator.jl"))
     __JULIA_EXT__ = True
 except Exception as e:
     try:
@@ -49,6 +48,7 @@ except Exception as e:
                     "fast_calculator.jl"))
                 __JULIA_EXT__ = True
             except Exception as e:
+
                 warnings.warn(JULIA_ERROR.format(e))
     except Exception as e:
         warnings.warn(JULIA_ERROR.format(e))

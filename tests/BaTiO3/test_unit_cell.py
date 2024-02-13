@@ -53,6 +53,11 @@ def test_2D(plot = False, nat = 5):
     s = CC.Structure.Structure(nat)
     s.unit_cell = np.eye(3)
     s.has_unit_cell = True
+    s.atoms = ["H"]*nat
+    s.atoms[1] = "O"
+    s.atoms[2] = "C"
+    s.atoms[3] = "N"
+    s.atoms[4] = "S"
 
     for i in range(nat):
         s.coords[i, :] = np.random.uniform(size = 3)
@@ -118,6 +123,11 @@ def test_julia_calculator(nat = 5):
     s = CC.Structure.Structure(nat)
     s.unit_cell = np.eye(3)
     s.has_unit_cell = True
+    s.atoms[0] = "H"
+    s.atoms[1] = "O"
+    s.atoms[2] = "C"
+    s.atoms[3] = "N"
+    s.atoms[4] = "S"
 
     for i in range(nat):
         s.coords[i, :] = np.random.uniform(size = 3)
