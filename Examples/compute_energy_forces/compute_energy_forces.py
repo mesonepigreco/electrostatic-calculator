@@ -1,11 +1,11 @@
 """
 This simple tutorial shows how to use pyelectrostatic to compute
 the forces on a structure.
-Here we will use ASE to load the structure, 
-and cellconstructor to load the espresso dynamical matrix file to initialize the electrostatic model
+Here, we use ASE to load the structure, 
+and cellconstructor to load the dynamical matrix to initialize the electrostatic model
 (only dielectric tensor, centroid structure and effective charges are used)
 
-First of all, import all the packages
+Let's import the necessary modules
 """
 
 # Import the LongRangeInteractions ASE calculator from py-electrostatic
@@ -23,7 +23,7 @@ import time
 
 
 """ 
-Let's initialize the electrostatic calculator by loading the espresso dynamical matrix
+First, we need to initialize the dynamical matrix and the electrostatic calculator.
 """
 
 dyn = CC.Phonons.Phonons("BaTiO3_")

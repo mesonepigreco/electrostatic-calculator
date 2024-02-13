@@ -2,12 +2,18 @@
 try
     using LinearAlgebra
     using LoopVectorization
+    using DiffResults
+    using ForwardDiff
 catch
     using Pkg 
     Pkg.add("LinearAlgebra")
     Pkg.add("LoopVectorization")
+    Pkg.add("DiffResults")
+    Pkg.add("ForwardDiff")
     using LinearAlgebra
     using LoopVectorization
+    using DiffResults
+    using ForwardDiff
 end
 
 # Enforce blas to be executed on a single thread
@@ -162,7 +168,7 @@ end
 Compute the electrostatic energy and forces.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
 """
-function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T) where {T <: AbstractFloat}
+function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T) where {T}
 
     n_atoms = size(atomic_positions, 1)
     n_ks = size(k_points, 1)
@@ -246,6 +252,65 @@ function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T},
     return energy, force
 end
 
+
+@doc raw"""
+    get_energy_forces_stress(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T)
+
+The same as get_energy_forces but also computes the stress tensor.
+
+This is achieved exploiting the automatic differentiation of get_energy_forces.
+For details, see the documentation of get_energy_forces.
+"""
+function get_energy_forces_stress(k_points :: Matrix{T},
+        atomic_positions :: Matrix{T},
+        reference_struct :: Matrix{T},
+        Z :: Matrix{T},
+        ϵ :: Matrix{T},
+        η:: T,
+        volume :: T) where {T}
+
+    @doc raw"""
+        aux_diff(ε :: Matrix{T}) where {T} 
+
+    auxiliary function to compute the energy and forces for a given strain tensor.
+    """
+    n_atoms = size(atomic_positions, 1)
+    value = zeros(T, n_atoms * 3 + 1)
+    gradients = zeros(T, n_atoms * 3 + 1, 6)
+
+    function aux_diff(ε :: Matrix{T})
+        # Prepare the system with the strained structure
+        strain_matrix = Matrix{T}(I, 3, 3) + ε
+        inverse_strain = Matrix{T}(I, 3, 3) - ε
+
+        # Strain the volume
+        factor = 1.0 + ε[1, 1] + ε[2, 2] + ε[3, 3]
+        new_volume = volume * factor
+
+        # Strain the atomic positions and k-points
+        new_atomic_positions = atomic_positions * strain_matrix
+        new_reference_struct = reference_struct * strain_matrix
+        new_k_points = k_points * inverse_strain
+
+        energy, tmp_force = get_energy_forces(new_k_points, new_atomic_positions, new_reference_struct, Z, ϵ, η, new_volume)
+
+        output = zeros(T, n_atoms*3 + 1)
+        output[1] = energy
+        output[2:end] = vec(tmp_force)
+        return output
+    end
+
+    # Compute the stress tensor
+    start_strain = zeros(T, 3, 3)
+    jacob_results = DiffResults.JacobianResult(value, start_strain)
+    jacob_results = ForwardDiff.jacobian!(jacob_results, aux_diff, strain)
+
+    energy = DiffResults.value(jacob_results)[1]
+    force = reshape(DiffResults.value(jacob_results)[2:end], n_atoms, 3)
+    stress = reshape(DiffResults.jacobian(jacob_results)[1, :], 3, 3)
+
+    return energy, force, stress
+end
 
 @doc raw"""
     setup_effective_charges(reference_coords :: Matrix{T},
