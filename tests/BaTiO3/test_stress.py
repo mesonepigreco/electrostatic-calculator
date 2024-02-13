@@ -75,8 +75,8 @@ def test_stress(nat = 5, supercell = (3,3,3), verbose=True):
         eps_voigt[:] = 0
         eps_voigt[i] = delta_value
 
-        if i > 2:
-            eps_voigt[i] *= 2
+        #if i > 2:
+        #    eps_voigt[i] *= 2
 
         s_strained = new_s.strain(eps_voigt, voigt = True)
         atm_strain = s_strained.get_ase_atoms()

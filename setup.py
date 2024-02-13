@@ -1,4 +1,4 @@
-from numpy.distutils.core import setup, Extension
+from setuptools import setup
 import sys
 
 def readme():
@@ -9,7 +9,7 @@ def readme():
 
 setup( name = "py-electrostatic",
        version = "0.1",
-       description = "Python utility to remove long-range electrostatic Coulomb interactions from atomic forces",
+       description = "Force-field to calculate long-range electrostatic interactions in polar materials",
        author = "Lorenzo Monacelli",
        url = "https://github.com/mesonepigreco/py-electristatic",
        packages = ["pyelectrostatic"],
