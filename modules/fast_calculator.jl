@@ -162,13 +162,16 @@ end
 
 
 @doc raw"""
-    get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T})
+    get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, Z :: Matrix{U}, ϵ :: Matrix{U}, η :: U, volume :: T) where {T, U}
 
 
 Compute the electrostatic energy and forces.
 The input must be in Ha atomic units and the output will be in Ha atomic units.
+
+The different type of T and U comes from the possibility of using automatic 
+differentiation while kiiping the U values real.
 """
-function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{T}, ϵ :: Matrix{T}, η:: T, volume :: T) where {T}
+function get_energy_forces(k_points :: Matrix{T}, atomic_positions :: Matrix{T}, reference_struct :: Matrix{T}, Z :: Matrix{U}, ϵ :: Matrix{U}, η:: U, volume :: T) where {T, U}
 
     n_atoms = size(atomic_positions, 1)
     n_ks = size(k_points, 1)
@@ -278,7 +281,9 @@ function get_energy_forces_stress(k_points :: Matrix{T},
     value = zeros(T, n_atoms * 3 + 1)
     gradients = zeros(T, n_atoms * 3 + 1, 6)
 
-    function aux_diff(ε :: Matrix{T})
+    println("Shape of k_points: $(size(k_points))")
+
+    function aux_diff(ε :: Matrix{T}) where {T}
         # Prepare the system with the strained structure
         strain_matrix = Matrix{T}(I, 3, 3) + ε
         inverse_strain = Matrix{T}(I, 3, 3) - ε
@@ -290,6 +295,9 @@ function get_energy_forces_stress(k_points :: Matrix{T},
         # Strain the atomic positions and k-points
         new_atomic_positions = atomic_positions * strain_matrix
         new_reference_struct = reference_struct * strain_matrix
+
+        println("Shape of new_k_points: $(size(k_points))")
+        println("Shape of inverse_strain: $(size(inverse_strain))")
         new_k_points = k_points * inverse_strain
 
         energy, tmp_force = get_energy_forces(new_k_points, new_atomic_positions, new_reference_struct, Z, ϵ, η, new_volume)
@@ -303,11 +311,12 @@ function get_energy_forces_stress(k_points :: Matrix{T},
     # Compute the stress tensor
     start_strain = zeros(T, 3, 3)
     jacob_results = DiffResults.JacobianResult(value, start_strain)
-    jacob_results = ForwardDiff.jacobian!(jacob_results, aux_diff, strain)
+    jacob_results = ForwardDiff.jacobian!(jacob_results, aux_diff, start_strain)
 
     energy = DiffResults.value(jacob_results)[1]
     force = reshape(DiffResults.value(jacob_results)[2:end], n_atoms, 3)
     stress = reshape(DiffResults.jacobian(jacob_results)[1, :], 3, 3)
+    stress *= -1.0 / volume
 
     return energy, force, stress
 end

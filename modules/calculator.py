@@ -56,6 +56,10 @@ except Exception as e:
 DEBUG = False
 
 
+def is_julia_available():
+    return __JULIA_EXT__
+
+
 def convert_to_cc_structure(item):
     """Convert any structure into a Cellconstructor Structure."""
     if isinstance(item, ase.Atoms):
@@ -132,6 +136,7 @@ class CompositeCalculator(Calculator):
 
         atoms.set_calculator(self)
 
+BASIC_PROPERTIES = ["energy", "forces"]
 
 class ElectrostaticCalculator(Calculator):
     """
@@ -152,12 +157,21 @@ class ElectrostaticCalculator(Calculator):
         self.kpoints = None
         self.julia_speedup = True  
         self.initialized = False
+        self.implemented_properties = ["energy", "forces", "stress"]
 
-        self.implemented_properties = ["energy", "forces"]   # , "stress"]
+        self.compute_stress = is_julia_available()
 
     def __setattr__(self, __name: str, __value) -> None:
         if __name in ["eta", "cutoff"]:
             self.initialized = False
+        if __name == "compute_stress":
+            if __value and not is_julia_available():
+                raise ValueError("Julia is not available. Please install Julia and the required modules to evaluate the stress tensor")
+
+            if __value:
+                self.implemented_properties = BASIC_PROPERTIES + ["stress"]
+            else:
+                self.implemented_properties = BASIC_PROPERTIES
         return super().__setattr__(__name, __value)
 
     def init(self, reference_structure: CC.Structure.Structure,
@@ -343,6 +357,7 @@ class ElectrostaticCalculator(Calculator):
 
         self.energy = None
         self.force = None
+        self.stress = None
         self.results = {}
         self.initialized = True
 
@@ -528,19 +543,31 @@ class ElectrostaticCalculator(Calculator):
             atomic_pos = struct.coords * CC.Units.A_TO_BOHR
             volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
             ref_structure = self.reference_structure.coords * CC.Units.A_TO_BOHR
+            stress = None
 
-            energy, force = julia.Main.get_energy_forces(self.kpoints, 
-                                                         atomic_pos,
-                                                         ref_structure,
-                                                         self.work_charges,
-                                                         self.dielectric_tensor,
-                                                         self.eta * CC.Units.A_TO_BOHR,
-                                                         volume)
+            if self.compute_stress:
+                energy, force, stress = julia.Main.get_energy_forces_stress(self.kpoints,
+                                                                            atomic_pos,
+                                                                            ref_structure,
+                                                                            self.work_charges,
+                                                                            self.dielectric_tensor,
+                                                                            self.eta * CC.Units.A_TO_BOHR,
+                                                                            volume)
+            else:
+                energy, force = julia.Main.get_energy_forces(self.kpoints, 
+                                                             atomic_pos,
+                                                             ref_structure,
+                                                             self.work_charges,
+                                                             self.dielectric_tensor,
+                                                             self.eta * CC.Units.A_TO_BOHR,
+                                                             volume)
 
             energy *= CC.Units.HA_TO_EV
             force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
+            stress *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
             self.energy = energy
             self.force = force
+            self.stress = stress
             return
 
         # Fallback to the slow python code
@@ -667,6 +694,10 @@ class ElectrostaticCalculator(Calculator):
 
         self.results["energy"] = self.energy
         self.results["forces"] = self.force
+
+        if self.compute_stress:
+            self.results["stress"] = self.stress
+
         #self.results["dipole"] = self.get_dipole() 
 
 

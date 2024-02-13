@@ -369,9 +369,9 @@ def test_one_atom_model(plot = False):
 
 if __name__ == "__main__":
     test_julia_calculator()
-    #test_1D(True)
+    test_1D(True)
     test_2D(True)
     test_total_translation(True)
-    #test_unit_cell(plot = True)
-    #test_one_atom_model(plot = True)
+    test_unit_cell(plot = True)
+    test_one_atom_model(plot = True)
     plt.show()
