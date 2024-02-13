@@ -21,7 +21,7 @@ def test_1D(plot = False):
 
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = 4
+    calculator.eta = 0.5
     calculator.init(s.copy(), effective_charges, dielectric_tensor)    
     print("kpts:", calculator.kpoints)
 
@@ -34,6 +34,7 @@ def test_1D(plot = False):
     x_values = np.zeros_like(energy)
 
     for i in range(n_steps):
+        print("Step:", i)
         s.coords[0,coordinate] += dstep
         atm = s.get_ase_atoms()
         atm.set_calculator(calculator)
@@ -181,7 +182,7 @@ def test_total_translation(plot = False):
     #BaTiO3.dielectric_tensor[:,:] = np.eye(3)
 
     calculator = calc.ElectrostaticCalculator()
-    calculator.eta = 6
+    calculator.eta = 0.5
     calculator.cutoff = 5
     calculator.init_from_phonons(BaTiO3)
     #calculator.check_asr()
@@ -270,6 +271,8 @@ def test_unit_cell(plot = False):
         BaTiO3.effective_charges[i, :, :] = np.eye(3) * np.trace(BaTiO3.effective_charges[i, :, :]) / 3
 
     calculator = calc.ElectrostaticCalculator()
+    calculator.eta = 0.5
+    calculator.cutoff = 5
     calculator.init_from_phonons(BaTiO3)
     #calculator.dielectric_tensor[:,:] = np.eye(3)
 
@@ -378,10 +381,16 @@ def test_one_atom_model(plot = False):
         plt.tight_layout()
 
 if __name__ == "__main__":
+    print("Test julia calculator")
     test_julia_calculator()
+    print("Test 1d")
     test_1D(True)
+    print("Test 2d")
     test_2D(True)
+    print("Test translation")
     test_total_translation(True)
+    print("Test unit cell")
     test_unit_cell(plot = True)
-    test_one_atom_model(plot = True)
+    print("Test one atom model")
+    # test_one_atom_model(plot = True)
     plt.show()

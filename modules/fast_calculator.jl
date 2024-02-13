@@ -281,7 +281,7 @@ function get_energy_forces_stress(k_points :: Matrix{T},
     value = zeros(T, n_atoms * 3 + 1)
     gradients = zeros(T, n_atoms * 3 + 1, 6)
 
-    println("Shape of k_points: $(size(k_points))")
+    # println("Shape of k_points: $(size(k_points))")
 
     function aux_diff(ε :: Matrix{T}) where {T}
         # Prepare the system with the strained structure
@@ -296,8 +296,8 @@ function get_energy_forces_stress(k_points :: Matrix{T},
         new_atomic_positions = atomic_positions * strain_matrix
         new_reference_struct = reference_struct * strain_matrix
 
-        println("Shape of new_k_points: $(size(k_points))")
-        println("Shape of inverse_strain: $(size(inverse_strain))")
+        # println("Shape of new_k_points: $(size(k_points))")
+        # println("Shape of inverse_strain: $(size(inverse_strain))")
         new_k_points = k_points * inverse_strain
 
         energy, tmp_force = get_energy_forces(new_k_points, new_atomic_positions, new_reference_struct, Z, ϵ, η, new_volume)
