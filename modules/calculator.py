@@ -136,7 +136,7 @@ class CompositeCalculator(Calculator):
 
         atoms.set_calculator(self)
 
-BASIC_PROPERTIES = ["energy", "forces"]
+BASIC_PROPERTIES = ["energy", "forces", "free_energy"]
 
 class ElectrostaticCalculator(Calculator):
     """
@@ -258,6 +258,18 @@ class ElectrostaticCalculator(Calculator):
 
         if target_structure.N_atoms != self.uc_structure.N_atoms * np.prod(self.supercell):
             raise ValueError("The target structure has a different number of atoms! Check if the supercell is {}".format(self.supercell))
+
+        # Check if the target structure has a different cell
+        # In this case, the calculator needs to be reinitialized (for the k-points)
+        if not np.allclose(target_structure.unit_cell, self.reference_structure.unit_cell):
+            new_uc_structure = self.uc_structure.copy()
+            new_unit_cell = target_structure.unit_cell.copy()
+            for i in range(3):
+                new_unit_cell[i, :] /= self.supercell[i]
+            new_uc_structure.change_unit_cell(new_unit_cell)
+
+            # Initialize again the calculator with the new cell
+            self.init(new_uc_structure, self.uc_effective_charges, self.dielectric_tensor, self.unique_atom_element, self.supercell)
 
         # Shift the structure to have the unique element at the center
         unique_index = -1
@@ -564,7 +576,7 @@ class ElectrostaticCalculator(Calculator):
 
             energy *= CC.Units.HA_TO_EV
             force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
-            stress *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
+            stress *= -CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
             self.energy = energy
             self.force = force
             self.stress = stress
@@ -693,6 +705,7 @@ class ElectrostaticCalculator(Calculator):
 
 
         self.results["energy"] = self.energy
+        self.results["free_energy"] = self.energy
         self.results["forces"] = self.force
 
         if self.compute_stress:
