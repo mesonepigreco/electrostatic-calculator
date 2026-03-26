@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-electrostatic"
+version = "0.2"
+description = "Force-field to calculate long-range electrostatic interactions in polar materials"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "GPL-3.0"}
+authors = [
+    {name = "Lorenzo Monacelli", email = "lorenzo.monacelli@alumni.iu.edu"}
+]
+keywords = ["physics", "electrostatics", "polar-materials", "forcefield", "condensed-matter"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "ase",
+    "cellconstructor",
+    "julia",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/mesonepigreco/py-electrostatic"
+Repository = "https://github.com/mesonepigreco/py-electrostatic"
+Issues = "https://github.com/mesonepigreco/py-electrostatic/issues"
+
+[tool.setuptools]
+packages = ["pyelectrostatic"]
+package-dir = {pyelectrostatic = "modules"}
+
+[tool.setuptools.package-data]
+pyelectrostatic = ["*.jl"]

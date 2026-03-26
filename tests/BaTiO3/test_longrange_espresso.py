@@ -5,7 +5,7 @@ import pyelectrostatic, pyelectrostatic.calculator as calculator
 
 
 
-def test_espresso():
+def test_espresso(verbose=False):
     # Change directory to the local directory where the script is
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,9 +29,12 @@ def test_espresso():
     dist1 = np.linalg.norm(dynq_espresso - dynq_electrostatic)
     dist2 = np.linalg.norm(dynq_espresso - np.conj(dynq_electrostatic))
 
+    if verbose:
+        print("Deviation from espresso: ", dist1, dist2)
+
     assert dist1 < 1e-5 and dist2 < 1e-5, "Distance between dynamical matrices: {} {}".format(dist1, dist2)
 
 
 if __name__ == "__main__":
-    test_espresso()
+    test_espresso(verbose=True)
 
