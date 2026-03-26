@@ -37,10 +37,8 @@ jobs:
         pip install julia
 
         # Clone and install cellconstructor
-        git clone https://github.com/mesonepigreco/CellConstructor.git
-        cd CellConstructor
-        python setup.py install --user
-        cd ..
+        pip install meson meson-python ninja
+        pip install --no-build-isolation cellconstructor
 
         # Avoid to include CellConstructor in the test
         rm -r CellConstructor
@@ -56,7 +54,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install the package
       run: |
-        python setup.py install --user
+        pip install --user .
     - name: Test with pytest
       run: |
         pytest
