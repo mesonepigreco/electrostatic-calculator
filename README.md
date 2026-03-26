@@ -10,7 +10,7 @@ If you use this code in your research, please cite:
 
 ## Documentation
 
-Full documentation is available at: **https://mesonepigreco.github.io/py-electrostatic/**
+Full documentation is available at: **https://mesonepigreco.github.io/electrostatic-calculator/**
 
 The documentation includes:
 - Installation guide
