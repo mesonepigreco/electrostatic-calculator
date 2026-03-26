@@ -1,0 +1,793 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/api_reference/index.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Citations" href="../citations.html" />
+    <link rel="prev" title="Tutorial 4: SSCHA with Electrostatics" href="../tutorials/04_sscha_electrostatic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-module-calculator">Main Module: calculator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.calculator.CompositeCalculator"><code class="docutils literal notranslate"><span class="pre">CompositeCalculator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.CompositeCalculator.calculate"><code class="docutils literal notranslate"><span class="pre">CompositeCalculator.calculate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.calculate"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.check_asr"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.check_asr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.get_longrange_phonons"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.get_longrange_phonons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.get_supercell_fc"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.get_supercell_fc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init_from_phonons"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.init_from_phonons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init_kpoints"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.init_kpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyelectrostatic.calculator.ElectrostaticCalculator.setup_structure"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator.setup_structure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.calculator.convert_to_cc_structure"><code class="docutils literal notranslate"><span class="pre">convert_to_cc_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.calculator.is_julia_available"><code class="docutils literal notranslate"><span class="pre">is_julia_available()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#electrostaticcalculator">ElectrostaticCalculator</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">ElectrostaticCalculator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#compositecalculator">CompositeCalculator</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id18"><code class="docutils literal notranslate"><span class="pre">CompositeCalculator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id20"><code class="docutils literal notranslate"><span class="pre">convert_to_cc_structure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21"><code class="docutils literal notranslate"><span class="pre">is_julia_available()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyelectrostatic.utils">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.utils.plot_cutoff_convergence"><code class="docutils literal notranslate"><span class="pre">plot_cutoff_convergence()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.utils.study_cutoff_convergence"><code class="docutils literal notranslate"><span class="pre">study_cutoff_convergence()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyelectrostatic.interface">Interface Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyelectrostatic.interface.get_forceset_from_phonopy_disp"><code class="docutils literal notranslate"><span class="pre">get_forceset_from_phonopy_disp()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api_reference/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>This section provides detailed API documentation for py-electrostatic modules and classes.</p>
+<div class="toctree-wrapper compound">
+</div>
+<section id="main-module-calculator">
+<h2>Main Module: calculator<a class="headerlink" href="#main-module-calculator" title="Link to this heading"></a></h2>
+<dl class="py class" id="module-pyelectrostatic.calculator">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.CompositeCalculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">CompositeCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_calculators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#CompositeCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.CompositeCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://ase-lib.org/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
+<p>Create a calculator that combines two different calculators.</p>
+<p>This calculator adds the energy and forces of two or more different calculators.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.CompositeCalculator.calculate">
+<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#CompositeCalculator.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.CompositeCalculator.calculate" title="Link to this definition"></a></dt>
+<dd><p>Calculate the energy and forces of the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atoms</strong> – The atoms object to calculate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">ElectrostaticCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://ase-lib.org/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
+<p>Calculator for long-range electrostatic interaction.</p>
+<p>Long range calculator.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.calculate">
+<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.calculate" title="Link to this definition"></a></dt>
+<dd><p>The actual function called by the ASE calculator</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.check_asr">
+<span class="sig-name descname"><span class="pre">check_asr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.check_asr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.check_asr" title="Link to this definition"></a></dt>
+<dd><p>Check if the acoustic sum rule is enforced on the effective charges.</p>
+<p>This is very important to properly compute the forces on the structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.get_longrange_phonons">
+<span class="sig-name descname"><span class="pre">get_longrange_phonons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">struct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_from_cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.get_longrange_phonons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.get_longrange_phonons" title="Link to this definition"></a></dt>
+<dd><section id="phonons">
+<h3>PHONONS<a class="headerlink" href="#phonons" title="Link to this heading"></a></h3>
+<p>Use the dipole moment to return the nonanalitic phonons.
+This evaluation is correct in the limit eta -&gt; oo</p>
+<dl class="field-list simple">
+<dt class="field-odd">param q_point<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The q vector at which the dynamical matrix is evaluated.
+By default accepts cellconstructor units (rad / A)
+To pass into Bohr^-1 in units of 2pi, use  convert_from_cc = False</p>
+</dd>
+<dt class="field-even">type q_point<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param struct<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The structure used to perform the calculation</p>
+</dd>
+<dt class="field-even">type struct<span class="colon">:</span></dt>
+<dd class="field-even"><p>CC.Structure.Structure</p>
+</dd>
+<dt class="field-odd">param convert_from_cc<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If true (default) use rad / A (the q points as they are stored into
+cellconstructor Phonons)
+Otherwhise, use the default units of this calculator (2pi / Bohr)</p>
+</dd>
+<dt class="field-even">type convert_from_cc<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<section id="results">
+<h4>Results<a class="headerlink" href="#results" title="Link to this heading"></a></h4>
+<blockquote>
+<div><dl class="simple">
+<dt>force_constant_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)</dt><dd><p>The force constant matrix at the provided q point.
+The result is in Ry/Bohr^2</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.get_supercell_fc">
+<span class="sig-name descname"><span class="pre">get_supercell_fc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ase_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.get_supercell_fc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.get_supercell_fc" title="Link to this definition"></a></dt>
+<dd><section id="supercell-fc-matrix">
+<h3>SUPERCELL FC MATRIX<a class="headerlink" href="#supercell-fc-matrix" title="Link to this heading"></a></h3>
+<p>Return the force constant matrix of the given supercell structure.
+It works in the limit eta -&gt; oo</p>
+<section id="id1">
+<h4>Results<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<blockquote>
+<div><dl class="simple">
+<dt>fc_matrix<span class="classifier">np.ndarray(size = (3*nat, 3*nat), dtype = np.double)</span></dt><dd><p>The force constant matrix in the supercell.
+It is not divided by the masses.
+Units are Ry/Bohr if ase_units is false,
+eV/A otherwise</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effective_charges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dielectric_tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_atom_element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supercell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nufft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init" title="Link to this definition"></a></dt>
+<dd><section id="initialize-the-calculator">
+<h3>INITIALIZE THE CALCULATOR<a class="headerlink" href="#initialize-the-calculator" title="Link to this heading"></a></h3>
+<p>Setup the calculator to evaluate energy and forces.
+The calculator need a reference structure and effective charges of all atoms in the system.
+These quantities needs to be setup only at the beginnig.
+The reference structure should match the correct order of atoms that are provided when the calculator is executed.</p>
+<p>A supercell can be specified, if the calculator is actually going to be used in a supercell structure from the one provided.
+In that case, the default order is the same in the provided generate_supercell method from cellconstructor.Structure.Structure.
+This is the default behaviour of the set_tau subroutine from quantum espresso.</p>
+<p>Structure, effective charges and dielectric tensors are copied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param reference_structure<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The average position of each atom.</p>
+</dd>
+<dt class="field-even">type reference_structure<span class="colon">:</span></dt>
+<dd class="field-even"><p>CC.Structure.Structure</p>
+</dd>
+<dt class="field-odd">param effective_charges<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The effective charges, it must be a 3-rank tensor where the indices are
+Z[i, j, k]   -&gt; i is the atom index, j is the polarization of the electric field, k is the atomic-cartesian coordinate.</p>
+</dd>
+<dt class="field-even">type effective_charges<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param dielectric_tensor<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The 3x3 matrix containing the high-frequency static dielectric tensor.</p>
+</dd>
+<dt class="field-even">type dielectric_tensor<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param supercell<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional, if provided, generates automatically the data for the calculation on a supercell.</p>
+</dd>
+<dt class="field-even">type supercell<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+<dt class="field-odd">param unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The atomic name of the species used to identify the origin of the structure.
+There must be just one per cell
+If None, the first atom is used.
+TODO: find a better way!</p>
+</dd>
+<dt class="field-even">type unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param use_nufft<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.
+If False, use the standard k-point summation which scales as O(N³).</p>
+</dd>
+<dt class="field-even">type use_nufft<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.init_from_phonons">
+<span class="sig-name descname"><span class="pre">init_from_phonons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dynamical_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Phonons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_atom_element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nufft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init_from_phonons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init_from_phonons" title="Link to this definition"></a></dt>
+<dd><section id="id2">
+<h3>INITIALIZE THE CALCULATOR<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>Uses the reference of the dynamical matrix to initialize the phonons.
+Everything is read from the dynamical matrix, included the supercell.</p>
+<p>see init documentation for more details</p>
+<dl class="field-list simple">
+<dt class="field-odd">param - dynamical_matrix<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the dynamical matrix of the system</p>
+</dd>
+<dt class="field-even">param - unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-even"><p>the string of unique atom element in the structure
+(default: None, the first atom is used)</p>
+</dd>
+<dt class="field-odd">param - use_nufft<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.</p>
+</dd>
+<dt class="field-even">type - use_nufft<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.init_kpoints">
+<span class="sig-name descname"><span class="pre">init_kpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init_kpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.init_kpoints" title="Link to this definition"></a></dt>
+<dd><section id="initialize-the-k-points">
+<h3>INITIALIZE THE K POINTS<a class="headerlink" href="#initialize-the-k-points" title="Link to this heading"></a></h3>
+<p>Define the k points within the cutoff so that</p>
+<div class="math notranslate nohighlight">
+\[\left| \vec k \right| &lt; \frac{C}{\eta}\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> is the cutoff and <span class="math notranslate nohighlight">\(\eta\)</span> is the size of the gaussian charge core.</p>
+<p>We store the k vectors in Bohr^-1 to have a consistent units</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.setup_structure">
+<span class="sig-name descname"><span class="pre">setup_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.setup_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.setup_structure" title="Link to this definition"></a></dt>
+<dd><p>Set the effective_charge and reference structure.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.convert_to_cc_structure">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">convert_to_cc_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#convert_to_cc_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.convert_to_cc_structure" title="Link to this definition"></a></dt>
+<dd><p>Convert any structure into a Cellconstructor Structure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.is_julia_available">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">is_julia_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#is_julia_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.is_julia_available" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<section id="electrostaticcalculator">
+<h3>ElectrostaticCalculator<a class="headerlink" href="#electrostaticcalculator" title="Link to this heading"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">ElectrostaticCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://ase-lib.org/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
+<p>Calculator for long-range electrostatic interaction.</p>
+<p>Long range calculator.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.ElectrostaticCalculator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.ElectrostaticCalculator.__init__" title="Link to this definition"></a></dt>
+<dd><p>Basic calculator implementation.</p>
+<dl class="simple">
+<dt>restart: str</dt><dd><p>Prefix for restart file.  May contain a directory. Default
+is None: don’t restart.</p>
+</dd>
+<dt>ignore_bad_restart_file: bool</dt><dd><p>Deprecated, please do not use.
+Passing more than one positional argument to Calculator()
+is deprecated and will stop working in the future.
+Ignore broken or missing restart file.  By default, it is an
+error if the restart file is missing or broken.</p>
+</dd>
+<dt>directory: str or PurePath</dt><dd><p>Working directory in which to read and write files and
+perform calculations.</p>
+</dd>
+<dt>label: str</dt><dd><p>Name used for all files.  Not supported by all calculators.
+May contain a directory, but please use the directory parameter
+for that instead.</p>
+</dd>
+<dt>atoms: Atoms object</dt><dd><p>Optional Atoms object to which the calculator will be
+attached.  When restarting, atoms will get its positions and
+unit-cell updated from file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>The actual function called by the ASE calculator</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">check_asr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.check_asr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Check if the acoustic sum rule is enforced on the effective charges.</p>
+<p>This is very important to properly compute the forces on the structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">get_longrange_phonons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">struct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_from_cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.get_longrange_phonons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><section id="id6">
+<h4>PHONONS<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<p>Use the dipole moment to return the nonanalitic phonons.
+This evaluation is correct in the limit eta -&gt; oo</p>
+<dl class="field-list simple">
+<dt class="field-odd">param q_point<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The q vector at which the dynamical matrix is evaluated.
+By default accepts cellconstructor units (rad / A)
+To pass into Bohr^-1 in units of 2pi, use  convert_from_cc = False</p>
+</dd>
+<dt class="field-even">type q_point<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param struct<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The structure used to perform the calculation</p>
+</dd>
+<dt class="field-even">type struct<span class="colon">:</span></dt>
+<dd class="field-even"><p>CC.Structure.Structure</p>
+</dd>
+<dt class="field-odd">param convert_from_cc<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If true (default) use rad / A (the q points as they are stored into
+cellconstructor Phonons)
+Otherwhise, use the default units of this calculator (2pi / Bohr)</p>
+</dd>
+<dt class="field-even">type convert_from_cc<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<section id="id7">
+<h5>Results<a class="headerlink" href="#id7" title="Link to this heading"></a></h5>
+<blockquote>
+<div><dl class="simple">
+<dt>force_constant_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)</dt><dd><p>The force constant matrix at the provided q point.
+The result is in Ry/Bohr^2</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">get_supercell_fc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ase_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.get_supercell_fc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd><section id="id9">
+<h4>SUPERCELL FC MATRIX<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<p>Return the force constant matrix of the given supercell structure.
+It works in the limit eta -&gt; oo</p>
+<section id="id10">
+<h5>Results<a class="headerlink" href="#id10" title="Link to this heading"></a></h5>
+<blockquote>
+<div><dl class="simple">
+<dt>fc_matrix<span class="classifier">np.ndarray(size = (3*nat, 3*nat), dtype = np.double)</span></dt><dd><p>The force constant matrix in the supercell.
+It is not divided by the masses.
+Units are Ry/Bohr if ase_units is false,
+eV/A otherwise</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effective_charges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dielectric_tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_atom_element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supercell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nufft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd><section id="id12">
+<h4>INITIALIZE THE CALCULATOR<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<p>Setup the calculator to evaluate energy and forces.
+The calculator need a reference structure and effective charges of all atoms in the system.
+These quantities needs to be setup only at the beginnig.
+The reference structure should match the correct order of atoms that are provided when the calculator is executed.</p>
+<p>A supercell can be specified, if the calculator is actually going to be used in a supercell structure from the one provided.
+In that case, the default order is the same in the provided generate_supercell method from cellconstructor.Structure.Structure.
+This is the default behaviour of the set_tau subroutine from quantum espresso.</p>
+<p>Structure, effective charges and dielectric tensors are copied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param reference_structure<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The average position of each atom.</p>
+</dd>
+<dt class="field-even">type reference_structure<span class="colon">:</span></dt>
+<dd class="field-even"><p>CC.Structure.Structure</p>
+</dd>
+<dt class="field-odd">param effective_charges<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The effective charges, it must be a 3-rank tensor where the indices are
+Z[i, j, k]   -&gt; i is the atom index, j is the polarization of the electric field, k is the atomic-cartesian coordinate.</p>
+</dd>
+<dt class="field-even">type effective_charges<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param dielectric_tensor<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The 3x3 matrix containing the high-frequency static dielectric tensor.</p>
+</dd>
+<dt class="field-even">type dielectric_tensor<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param supercell<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional, if provided, generates automatically the data for the calculation on a supercell.</p>
+</dd>
+<dt class="field-even">type supercell<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+<dt class="field-odd">param unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The atomic name of the species used to identify the origin of the structure.
+There must be just one per cell
+If None, the first atom is used.
+TODO: find a better way!</p>
+</dd>
+<dt class="field-even">type unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param use_nufft<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.
+If False, use the standard k-point summation which scales as O(N³).</p>
+</dd>
+<dt class="field-even">type use_nufft<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">init_from_phonons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dynamical_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Phonons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_atom_element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nufft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init_from_phonons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd><section id="id14">
+<h4>INITIALIZE THE CALCULATOR<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<p>Uses the reference of the dynamical matrix to initialize the phonons.
+Everything is read from the dynamical matrix, included the supercell.</p>
+<p>see init documentation for more details</p>
+<dl class="field-list simple">
+<dt class="field-odd">param - dynamical_matrix<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the dynamical matrix of the system</p>
+</dd>
+<dt class="field-even">param - unique_atom_element<span class="colon">:</span></dt>
+<dd class="field-even"><p>the string of unique atom element in the structure
+(default: None, the first atom is used)</p>
+</dd>
+<dt class="field-odd">param - use_nufft<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.</p>
+</dd>
+<dt class="field-even">type - use_nufft<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">init_kpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.init_kpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id15" title="Link to this definition"></a></dt>
+<dd><section id="id16">
+<h4>INITIALIZE THE K POINTS<a class="headerlink" href="#id16" title="Link to this heading"></a></h4>
+<p>Define the k points within the cutoff so that</p>
+<div class="math notranslate nohighlight">
+\[\left| \vec k \right| &lt; \frac{C}{\eta}\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> is the cutoff and <span class="math notranslate nohighlight">\(\eta\)</span> is the size of the gaussian charge core.</p>
+<p>We store the k vectors in Bohr^-1 to have a consistent units</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">setup_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Structure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#ElectrostaticCalculator.setup_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id17" title="Link to this definition"></a></dt>
+<dd><p>Set the effective_charge and reference structure.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="compositecalculator">
+<h3>CompositeCalculator<a class="headerlink" href="#compositecalculator" title="Link to this heading"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="id18">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">CompositeCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_calculators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#CompositeCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id18" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://ase-lib.org/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
+<p>Create a calculator that combines two different calculators.</p>
+<p>This calculator adds the energy and forces of two or more different calculators.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyelectrostatic.calculator.CompositeCalculator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_calculators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#CompositeCalculator.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.calculator.CompositeCalculator.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>list_of_calculators</strong> – The list of calculators to combine.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#CompositeCalculator.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id19" title="Link to this definition"></a></dt>
+<dd><p>Calculate the energy and forces of the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atoms</strong> – The atoms object to calculate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="utility-functions">
+<h3>Utility Functions<a class="headerlink" href="#utility-functions" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">convert_to_cc_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#convert_to_cc_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id20" title="Link to this definition"></a></dt>
+<dd><p>Convert any structure into a Cellconstructor Structure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.calculator.</span></span><span class="sig-name descname"><span class="pre">is_julia_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/calculator.html#is_julia_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id21" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="module-pyelectrostatic.utils">
+<span id="utilities-module"></span><h2>Utilities Module<a class="headerlink" href="#module-pyelectrostatic.utils" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyelectrostatic.utils.plot_cutoff_convergence">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.utils.</span></span><span class="sig-name descname"><span class="pre">plot_cutoff_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoffs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/utils.html#plot_cutoff_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.utils.plot_cutoff_convergence" title="Link to this definition"></a></dt>
+<dd><section id="plot-the-convergence-of-the-cutoff">
+<h3>PLOT THE CONVERGENCE OF THE CUTOFF<a class="headerlink" href="#plot-the-convergence-of-the-cutoff" title="Link to this heading"></a></h3>
+<p>This is a simple utility that plots in a fancy way the calculation
+performed by study_cutoff_convergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param cutoffs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of the cutoffs values</p>
+</dd>
+<dt class="field-even">type cutoffs<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param energies<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the list of total energy for each cutoff</p>
+</dd>
+<dt class="field-even">type energies<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param forces<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The total forces on the structure for each cutoff</p>
+</dd>
+<dt class="field-even">type forces<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">param show<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If true, calls the show function of matplotlib at the end</p>
+</dd>
+<dt class="field-even">type show<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param save_data<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional: path to a file on which the data are saved for further analysis</p>
+</dd>
+<dt class="field-even">type save_data<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+<dt class="field-odd">param last_reference<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If true, subtract the last cutoff as a reference</p>
+</dd>
+<dt class="field-even">type last_reference<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>  <span class="c1"># [initialize the calculator and structure]</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="n">cutoffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="n">energies</span><span class="p">,</span> <span class="n">forces</span> <span class="o">=</span> <span class="n">pyelectrostatic</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">study_cutoff_convergence</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">cutoffs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="n">pyelectrostatic</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_cutoff_convergence</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">forces</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyelectrostatic.utils.study_cutoff_convergence">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.utils.</span></span><span class="sig-name descname"><span class="pre">study_cutoff_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([0.,</span> <span class="pre">3.33333333,</span> <span class="pre">6.66666667,</span> <span class="pre">10.,</span> <span class="pre">13.33333333,</span> <span class="pre">16.66666667,</span> <span class="pre">20.,</span> <span class="pre">23.33333333,</span> <span class="pre">26.66666667,</span> <span class="pre">30.])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/utils.html#study_cutoff_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.utils.study_cutoff_convergence" title="Link to this definition"></a></dt>
+<dd><section id="study-cutoff-convergence">
+<h3>STUDY CUTOFF CONVERGENCE<a class="headerlink" href="#study-cutoff-convergence" title="Link to this heading"></a></h3>
+<p>This utility function helps to choose a good cutoff for the convergence.
+You need to pass the calculator, a target structure and a list of cutoffs,
+we return the total energies for each cutoff and the forces on the atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param calculator<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The long range interaction calculator</p>
+</dd>
+<dt class="field-even">type calculator<span class="colon">:</span></dt>
+<dd class="field-even"><p>pyelectrostatic.calculator.LongRangeInteractions</p>
+</dd>
+<dt class="field-odd">param structure<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Either a cellconstructor or an ASE crystal structure on which the
+test is carried.</p>
+</dd>
+<dt class="field-even">type structure<span class="colon">:</span></dt>
+<dd class="field-even"><p>cellconstructor.Structure.Structure or ase.Atoms</p>
+</dd>
+<dt class="field-odd">param cutoffs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of the cutoffs (in Angstrom).
+The default value is 10 steps between 0 and 30 A</p>
+</dd>
+<dt class="field-even">type cutoffs<span class="colon">:</span></dt>
+<dd class="field-even"><p>list (or ndarray), optional</p>
+</dd>
+<dt class="field-odd">param progress<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If true, print in stdout the progress of the calculation</p>
+</dd>
+<dt class="field-even">type progress<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<section id="id22">
+<h4>Results<a class="headerlink" href="#id22" title="Link to this heading"></a></h4>
+<blockquote>
+<div><dl class="simple">
+<dt>energies<span class="classifier">ndarray(size = len(cutoffs))</span></dt><dd><p>The value of the total energy per unit cell for each cutoff value</p>
+</dd>
+<dt>forces<span class="classifier">ndarray(size = (len(cutoffs), nat, 3))</span></dt><dd><p>The force that acts on each atom for each value of the cutoff</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-pyelectrostatic.interface">
+<span id="interface-module"></span><h2>Interface Module<a class="headerlink" href="#module-pyelectrostatic.interface" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyelectrostatic.interface.get_forceset_from_phonopy_disp">
+<span class="sig-prename descclassname"><span class="pre">pyelectrostatic.interface.</span></span><span class="sig-name descname"><span class="pre">get_forceset_from_phonopy_disp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disp_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'phonopy_disp.yaml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forceset_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FORCE_SETS'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyelectrostatic/interface.html#get_forceset_from_phonopy_disp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyelectrostatic.interface.get_forceset_from_phonopy_disp" title="Link to this definition"></a></dt>
+<dd><p>Read a phonopy_disp.yalm file, and use the given ASE calculator to write the FORCE_SET file
+This can be used to interface the code with phonopy for phonon calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calculator</strong> (<em>ASE</em><em> or </em><em>cellconstructor calculator.</em>) – The calculator used to compute forces and energies</p></li>
+<li><p><strong>disp_file</strong> (<em>string</em>) – Path to the file phonopy_disp.yaml that contains info about the displacements.</p></li>
+<li><p><strong>forceset_file</strong> (<em>string</em>) – Path to the output file on which to write the FORCE_SET file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tutorials/04_sscha_electrostatic.html" class="btn btn-neutral float-left" title="Tutorial 4: SSCHA with Electrostatics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../citations.html" class="btn btn-neutral float-right" title="Citations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

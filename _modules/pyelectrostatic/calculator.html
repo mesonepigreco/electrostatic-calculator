@@ -1,0 +1,926 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyelectrostatic.calculator &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/_modules/pyelectrostatic/calculator.html" />
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyelectrostatic.calculator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyelectrostatic.calculator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ase</span><span class="o">,</span><span class="w"> </span><span class="nn">ase.calculators</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calculator</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">CC</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.Structure</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.Methods</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.Phonons</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span><span class="o">,</span><span class="w"> </span><span class="nn">scipy.special</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<span class="n">__JULIA_EXT__</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">__FFT_JULIA_EXT__</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">JULIA_ERROR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Error in initializing the Julia extension.</span>
+<span class="s2">    Please install Julia and the required modules with:</span>
+
+<span class="s2">    $ pip install julia</span>
+
+<span class="s2">    The code will run without the Julia extension, but it will be slower (10-100 times).</span>
+
+<span class="s2">    Details on error: </span><span class="si">{}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">_JULIA_PROJECT_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">julia</span><span class="o">,</span><span class="w"> </span><span class="nn">julia.Main</span>
+    <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> 
+        <span class="s2">&quot;fast_calculator.jl&quot;</span><span class="p">))</span>
+    <span class="n">__JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1">#julia.Main.eval(f&#39;using Pkg; Pkg.activate(&quot;{_JULIA_PROJECT_PATH}&quot;)&#39;)</span>
+    <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+        <span class="s2">&quot;nufft_calculator.jl&quot;</span><span class="p">))</span>
+    <span class="n">__NUFFT_JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">julia</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">julia.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">Julia</span>
+            <span class="n">jl</span> <span class="o">=</span> <span class="n">Julia</span><span class="p">(</span><span class="n">compiled_modules</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">julia.Main</span>
+            <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+                <span class="s2">&quot;fast_calculator.jl&quot;</span><span class="p">))</span>
+            <span class="n">__JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1">#julia.Main.eval(f&#39;using Pkg; Pkg.activate(&quot;{_JULIA_PROJECT_PATH}&quot;)&#39;)</span>
+            <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+                <span class="s2">&quot;nufft_calculator.jl&quot;</span><span class="p">))</span>
+            <span class="n">__NUFFT_JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># Install the required modules</span>
+            <span class="n">julia</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+                    <span class="s2">&quot;fast_calculator.jl&quot;</span><span class="p">))</span>
+                <span class="n">__JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1">#julia.Main.eval(f&#39;using Pkg; Pkg.activate(&quot;{_JULIA_PROJECT_PATH}&quot;)&#39;)</span>
+                <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">include</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+                    <span class="s2">&quot;nufft_calculator.jl&quot;</span><span class="p">))</span>
+                <span class="n">__NUFFT_JULIA_EXT__</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">JULIA_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">JULIA_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="is_julia_available">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.is_julia_available">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_julia_available</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">__JULIA_EXT__</span></div>
+
+
+
+<div class="viewcode-block" id="convert_to_cc_structure">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.convert_to_cc_structure">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_to_cc_structure</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert any structure into a Cellconstructor Structure.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">()</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">generate_from_ase_atoms</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">item</span></div>
+
+
+
+<div class="viewcode-block" id="CompositeCalculator">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.CompositeCalculator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompositeCalculator</span><span class="p">(</span><span class="n">Calculator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a calculator that combines two different calculators.</span>
+
+<span class="sd">    This calculator adds the energy and forces of two or more different calculators.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CompositeCalculator.__init__">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.CompositeCalculator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_of_calculators</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the calculator.</span>
+
+<span class="sd">        :param list_of_calculators: The list of calculators to combine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_of_calculators</span> <span class="o">=</span> <span class="n">list_of_calculators</span>
+
+        <span class="c1"># Setup the implemented properties that are in common between all calculators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Fill self.implemented_properties with the intersection</span>
+        <span class="c1"># of the variable implemented_properties of each element in list_of_calculators</span>
+        <span class="k">for</span> <span class="n">calc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_of_calculators</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">implemented_properties</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> \
+                    <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">calc</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CompositeCalculator.calculate">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.CompositeCalculator.calculate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the energy and forces of the system.</span>
+
+<span class="sd">        :param atoms: The atoms object to calculate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call the calculate method of all the calculators</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Copy the atoms to avoid calculator override</span>
+        <span class="n">ss</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">()</span>
+        <span class="n">ss</span><span class="o">.</span><span class="n">generate_from_ase_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="n">tmp_atoms</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">get_ase_atoms</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">calc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_of_calculators</span><span class="p">):</span>
+            <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">calc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;energy&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()</span>
+
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</div>
+
+
+<span class="n">BASIC_PROPERTIES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;forces&quot;</span><span class="p">,</span> <span class="s2">&quot;free_energy&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ElectrostaticCalculator">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ElectrostaticCalculator</span><span class="p">(</span><span class="n">Calculator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculator for long-range electrostatic interaction.</span>
+
+<span class="sd">    Long range calculator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ElectrostaticCalculator.__init__">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># Default value is 6 Angstrom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># The actually initialized effective charges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Stop the sum when k &gt; cutoff / eta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">julia_speedup</span> <span class="o">=</span> <span class="kc">True</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_nufft</span> <span class="o">=</span> <span class="kc">True</span><span class="c1"># Use NUFFT-based calculation (O(N²) instead of O(N³))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;forces&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_stress</span> <span class="o">=</span> <span class="n">is_julia_available</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">__value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">__name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;eta&quot;</span><span class="p">,</span> <span class="s2">&quot;cutoff&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">__name</span> <span class="o">==</span> <span class="s2">&quot;compute_stress&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">__value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_julia_available</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Julia is not available. Please install Julia and the required modules to evaluate the stress tensor&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">__value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="n">BASIC_PROPERTIES</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">=</span> <span class="n">BASIC_PROPERTIES</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">__name</span><span class="p">,</span> <span class="n">__value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ElectrostaticCalculator.init">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.init">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_structure</span><span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">,</span>
+             <span class="n">effective_charges</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+             <span class="n">dielectric_tensor</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+             <span class="n">unique_atom_element</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">supercell</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+             <span class="n">use_nufft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        INITIALIZE THE CALCULATOR</span>
+<span class="sd">        =========================</span>
+
+<span class="sd">        Setup the calculator to evaluate energy and forces.</span>
+<span class="sd">        The calculator need a reference structure and effective charges of all atoms in the system.</span>
+<span class="sd">        These quantities needs to be setup only at the beginnig.</span>
+<span class="sd">        The reference structure should match the correct order of atoms that are provided when the calculator is executed. </span>
+
+<span class="sd">        A supercell can be specified, if the calculator is actually going to be used in a supercell structure from the one provided.</span>
+<span class="sd">        In that case, the default order is the same in the provided generate_supercell method from cellconstructor.Structure.Structure.</span>
+<span class="sd">        This is the default behaviour of the set_tau subroutine from quantum espresso.</span>
+
+<span class="sd">        Structure, effective charges and dielectric tensors are copied.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            reference_structure : CC.Structure.Structure</span>
+<span class="sd">                The average position of each atom.</span>
+<span class="sd">            effective_charges : ndarray</span>
+<span class="sd">                The effective charges, it must be a 3-rank tensor where the indices are</span>
+<span class="sd">                Z[i, j, k]   -&gt; i is the atom index, j is the polarization of the electric field, k is the atomic-cartesian coordinate.</span>
+<span class="sd">            dielectric_tensor : ndarray</span>
+<span class="sd">                The 3x3 matrix containing the high-frequency static dielectric tensor.</span>
+<span class="sd">            supercell : tuple</span>
+<span class="sd">                Optional, if provided, generates automatically the data for the calculation on a supercell.</span>
+<span class="sd">            unique_atom_element : str</span>
+<span class="sd">                The atomic name of the species used to identify the origin of the structure.</span>
+<span class="sd">                There must be just one per cell</span>
+<span class="sd">                If None, the first atom is used.</span>
+<span class="sd">                TODO: find a better way!</span>
+<span class="sd">            use_nufft : bool</span>
+<span class="sd">                If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.</span>
+<span class="sd">                If False, use the standard k-point summation which scales as O(N³).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_nufft</span> <span class="o">=</span> <span class="n">use_nufft</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span> <span class="o">=</span> <span class="n">reference_structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span> <span class="o">=</span> <span class="n">unique_atom_element</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Shift the structure to have the unique element at the center</span>
+        <span class="n">unique_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span><span class="p">:</span>
+                <span class="n">unique_index</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">unique_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The unique atom element was not found in the structure!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">unique_index</span><span class="p">,</span> <span class="p">:],</span>
+                                                  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uc_effective_charges</span> <span class="o">=</span> <span class="n">effective_charges</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">generate_supercell</span><span class="p">(</span><span class="n">supercell</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supercell</span> <span class="o">=</span> <span class="n">supercell</span>
+
+        <span class="n">n_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">N_atoms</span>
+        <span class="n">n_atoms_uc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">N_atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span> <span class="o">=</span> <span class="n">dielectric_tensor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">supercell</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">n_atoms_uc</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_atoms_uc</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">effective_charges</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">n_atoms</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">get_reciprocal_vectors</span><span class="p">()</span>
+        <span class="c1">#CC.Methods.get_reciprocal_vectors(self.reference_structure.unit_cell)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_kpoints</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.setup_structure">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.setup_structure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_structure</span><span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the effective_charge and reference structure.&quot;&quot;&quot;</span>
+        <span class="n">new_target</span> <span class="o">=</span> <span class="n">target_structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">target_structure</span><span class="o">.</span><span class="n">N_atoms</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">N_atoms</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supercell</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The target structure has a different number of atoms! Check if the supercell is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supercell</span><span class="p">))</span>
+
+        <span class="c1"># Check if the target structure has a different cell</span>
+        <span class="c1"># In this case, the calculator needs to be reinitialized (for the k-points)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">):</span>
+            <span class="n">new_uc_structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new_unit_cell</span> <span class="o">=</span> <span class="n">target_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">new_unit_cell</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supercell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">new_uc_structure</span><span class="o">.</span><span class="n">change_unit_cell</span><span class="p">(</span><span class="n">new_unit_cell</span><span class="p">)</span>
+
+            <span class="c1"># Initialize again the calculator with the new cell</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">new_uc_structure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_effective_charges</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">supercell</span><span class="p">,</span> <span class="n">use_nufft</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_nufft</span><span class="p">)</span>
+
+        <span class="c1"># Shift the structure to have the unique element at the center</span>
+        <span class="n">unique_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">new_target</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">new_target</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span><span class="p">:</span>
+                <span class="n">unique_index</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">unique_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The unique atom element </span><span class="si">{}</span><span class="s2"> was not found in the structure!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_atom_element</span><span class="p">))</span>
+
+        <span class="n">new_target</span><span class="o">.</span><span class="n">coords</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">new_target</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">unique_index</span><span class="p">,</span> <span class="p">:],</span>
+                                           <span class="p">(</span><span class="n">new_target</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">uc_target_cell</span> <span class="o">=</span> <span class="n">target_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">uc_target_cell</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supercell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Adjust the unit cell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">change_unit_cell</span><span class="p">(</span><span class="n">uc_target_cell</span><span class="p">)</span>
+
+        <span class="c1"># Match the target structure</span>
+        <span class="c1">#target_structure.get_itau(self.uc_structure) - 1</span>
+
+        <span class="n">target_cov</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Methods</span><span class="o">.</span><span class="n">covariant_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">,</span>
+                                                      <span class="n">new_target</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">self_cov</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Methods</span><span class="o">.</span><span class="n">covariant_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+
+        <span class="n">itau</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_equivalent_atoms</span><span class="p">(</span><span class="n">self_cov</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span>
+                                               <span class="n">target_cov</span><span class="p">,</span>
+                                               <span class="n">new_target</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="n">itau</span> <span class="o">-=</span> <span class="mi">1</span>  <span class="c1"># Convert julia to python indexing</span>
+
+        <span class="c1"># Assert that itau array of int contains each element the same number of times</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">itau</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">itau</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">new_target</span><span class="o">.</span><span class="n">save_scf</span><span class="p">(</span><span class="s2">&quot;target_structure.scf&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">save_scf</span><span class="p">(</span><span class="s2">&quot;reference_structure.scf&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The target structure does not match the reference structure.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span> <span class="o">=</span> <span class="n">new_target</span>
+        <span class="n">nat_sc</span> <span class="o">=</span> <span class="n">new_target</span><span class="o">.</span><span class="n">N_atoms</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nat_sc</span><span class="p">):</span>
+            <span class="c1"># Identify the correct vector</span>
+            <span class="n">delta_vector</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_cov</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">self_cov</span><span class="p">[</span><span class="n">itau</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:])]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">itau</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:]</span> <span class="o">+</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">delta_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">)</span>
+
+            <span class="c1"># print(&quot;Atom:&quot;, target_structure.atoms[i], i, itau[i],</span>
+            <span class="c1">#       delta_vector, target_cov[i, :], self_cov[itau[i], :])</span>
+
+            <span class="c1"># Prepare also the effective charges</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">[:,</span> <span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span> <span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">uc_effective_charges</span><span class="p">[</span><span class="n">itau</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:,</span> <span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.init_kpoints">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.init_kpoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_kpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        INITIALIZE THE K POINTS</span>
+<span class="sd">        =======================</span>
+
+<span class="sd">        Define the k points within the cutoff so that</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \left| \vec k \right| &lt; \frac{C}{\eta}</span>
+
+<span class="sd">        where :math:`C` is the cutoff and :math:`\eta` is the size of the gaussian charge core.</span>
+<span class="sd">        </span>
+<span class="sd">        We store the k vectors in Bohr^-1 to have a consistent units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize the sum over k</span>
+        <span class="n">max_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">.5</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)))]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">max_values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">max_values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">max_values</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">max_values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">kvector</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> 
+                    <span class="n">kvector</span> <span class="o">+=</span> <span class="n">m</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> 
+                    <span class="n">kvector</span> <span class="o">+=</span> <span class="n">n</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> 
+
+                    <span class="n">knorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">kvector</span><span class="p">)</span> 
+                    <span class="k">if</span> <span class="n">knorm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="ow">and</span> <span class="n">knorm</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kvector</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;WARNING, no k-points for the sum, the cell is too small to compute long-range interaction with eta = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.init_from_phonons">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.init_from_phonons">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_from_phonons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dynamical_matrix</span><span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Phonons</span><span class="o">.</span><span class="n">Phonons</span><span class="p">,</span>
+                          <span class="n">unique_atom_element</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">use_nufft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        INITIALIZE THE CALCULATOR</span>
+<span class="sd">        =========================</span>
+
+<span class="sd">        Uses the reference of the dynamical matrix to initialize the phonons. </span>
+<span class="sd">        Everything is read from the dynamical matrix, included the supercell.</span>
+
+<span class="sd">        see init documentation for more details</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        - dynamical_matrix: </span>
+<span class="sd">            the dynamical matrix of the system</span>
+<span class="sd">        - unique_atom_element: </span>
+<span class="sd">            the string of unique atom element in the structure </span>
+<span class="sd">            (default: None, the first atom is used)</span>
+<span class="sd">        - use_nufft : bool</span>
+<span class="sd">            If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">effective_charges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
+            <span class="s2">&quot;Error, the provided dynamical matrix has no effective charges&quot;</span>
+        <span class="k">assert</span> <span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">dielectric_tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
+            <span class="s2">&quot;Error, the provided dynamical matrix has no dielectric tensor&quot;</span>
+
+        <span class="n">un</span> <span class="o">=</span> <span class="n">unique_atom_element</span>
+        <span class="k">if</span> <span class="n">unique_atom_element</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">un</span> <span class="o">=</span> <span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span>
+                  <span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">effective_charges</span><span class="p">,</span>
+                  <span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+                  <span class="n">unique_atom_element</span><span class="o">=</span><span class="n">un</span><span class="p">,</span>
+                  <span class="n">supercell</span><span class="o">=</span><span class="n">dynamical_matrix</span><span class="o">.</span><span class="n">GetSupercell</span><span class="p">(),</span>
+                  <span class="n">use_nufft</span><span class="o">=</span><span class="n">use_nufft</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.check_asr">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.check_asr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_asr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the acoustic sum rule is enforced on the effective charges.</span>
+
+<span class="sd">        This is very important to properly compute the forces on the structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">N_atoms</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">asr_thr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">asr_thr</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, effective charge (atom </span><span class="si">{}</span><span class="s2">, electric field </span><span class="si">{}</span><span class="s2">) does not satisfy the ASR by </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">asr_thr</span><span class="p">))</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">total_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nat</span><span class="p">):</span>
+            <span class="n">total_shift</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_charges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">total_shift</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, a translation is giving problems&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.get_longrange_phonons">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.get_longrange_phonons">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_longrange_phonons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q_point</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">struct</span><span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">,</span> <span class="n">convert_from_cc</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        PHONONS</span>
+<span class="sd">        =======</span>
+
+<span class="sd">        Use the dipole moment to return the nonanalitic phonons.</span>
+<span class="sd">        This evaluation is correct in the limit eta -&gt; oo </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            q_point : ndarray</span>
+<span class="sd">                The q vector at which the dynamical matrix is evaluated.</span>
+<span class="sd">                By default accepts cellconstructor units (rad / A)</span>
+<span class="sd">                To pass into Bohr^-1 in units of 2pi, use  convert_from_cc = False</span>
+<span class="sd">            struct : CC.Structure.Structure</span>
+<span class="sd">                The structure used to perform the calculation</span>
+<span class="sd">            convert_from_cc : bool</span>
+<span class="sd">                If true (default) use rad / A (the q points as they are stored into</span>
+<span class="sd">                cellconstructor Phonons)</span>
+<span class="sd">                Otherwhise, use the default units of this calculator (2pi / Bohr)</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        -------</span>
+<span class="sd">            force_constant_matrix :: ndarray(size = (3*nat, 3*nat), dtype = np.complex128)</span>
+<span class="sd">                The force constant matrix at the provided q point.</span>
+<span class="sd">                The result is in Ry/Bohr^2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, calculator not initialized (must be redone after setting eta or cutoff)&quot;</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">__JULIA_EXT__</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Error, subroutine get_longrange_phonons works only with julia available.&quot;</span><span class="p">)</span>
+
+    
+        <span class="n">atomic_pos</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="o">**</span><span class="mi">3</span>
+
+        <span class="n">new_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">q_point</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">convert_from_cc</span><span class="p">:</span>
+            <span class="n">new_q</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+
+
+        <span class="n">fc_q</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_phonons_q</span><span class="p">(</span><span class="n">new_q</span><span class="p">,</span> 
+            <span class="n">atomic_pos</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">,</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">),</span>
+            <span class="n">volume</span><span class="p">)</span>
+
+        <span class="n">fc_q</span> <span class="o">*=</span> <span class="mi">2</span> <span class="c1"># Ha to Ry</span>
+
+        <span class="c1"># Perform the division by the masses</span>
+        <span class="c1">#_m_ = struct.get_masses_array()</span>
+        <span class="c1">#sqrt_mass = np.sqrt(np.tile(_m_, (3,1)).T.ravel())</span>
+        <span class="c1">#fc_q /= np.outer(sqrt_mass, sqrt_mass)</span>
+
+        <span class="k">return</span> <span class="n">fc_q</span></div>
+
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.get_supercell_fc">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.get_supercell_fc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_supercell_fc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span> <span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">,</span> <span class="n">ase_units</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        SUPERCELL FC MATRIX</span>
+<span class="sd">        ===================</span>
+
+<span class="sd">        Return the force constant matrix of the given supercell structure.</span>
+<span class="sd">        It works in the limit eta -&gt; oo</span>
+
+<span class="sd">        Results</span>
+<span class="sd">        -------</span>
+<span class="sd">            fc_matrix : np.ndarray(size = (3*nat, 3*nat), dtype = np.double)</span>
+<span class="sd">                The force constant matrix in the supercell.</span>
+<span class="sd">                It is not divided by the masses.</span>
+<span class="sd">                Units are Ry/Bohr if ase_units is false,</span>
+<span class="sd">                eV/A otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, calculator not initialized (must be redone after setting eta or cutoff)&quot;</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">__JULIA_EXT__</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Error, subroutine get_longrange_phonons works only with julia available.&quot;</span><span class="p">)</span>
+
+
+
+        <span class="n">atomic_pos</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">coords</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="o">**</span><span class="mi">3</span>
+
+        <span class="n">fc</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_realspace_fc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">,</span> 
+            <span class="n">atomic_pos</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+            <span class="n">volume</span><span class="p">)</span>
+
+        <span class="c1"># Perform the ase conversion</span>
+        <span class="k">if</span> <span class="n">ase_units</span><span class="p">:</span>
+            <span class="n">fc</span> <span class="o">*=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BORH_TO_ANGSTROM</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fc</span> <span class="o">*=</span> <span class="mi">2</span> <span class="c1"># Ha to Ry</span>
+
+
+        <span class="k">return</span> <span class="n">fc</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_energy_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">struct</span><span class="p">:</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Working function that evaluates the force and energy on the given configuration.</span>
+
+<span class="sd">        The results are stored in self.energy and self.forces</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, calculator not initialized (must be redone after setting eta or cutoff)&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_structure</span><span class="p">(</span><span class="n">struct</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">__JULIA_EXT__</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">julia_speedup</span><span class="p">:</span>
+            <span class="n">atomic_pos</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="o">**</span><span class="mi">3</span>
+            <span class="n">ref_structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">coords</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+            <span class="n">unit_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">unit_cell</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+            <span class="n">stress</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_nufft</span> <span class="ow">and</span> <span class="n">__JULIA_EXT__</span><span class="p">:</span>
+                <span class="c1"># NUFFT-based calculation for energy and forces</span>
+                <span class="c1"># This achieves O(Nₖ × N) complexity instead of O(Nₖ × N²)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_stress</span><span class="p">:</span>
+                    <span class="n">energy</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">stress</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_energy_forces_nufft_stress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">,</span>
+                                                                                   <span class="n">atomic_pos</span><span class="p">,</span>
+                                                                                   <span class="n">ref_structure</span><span class="p">,</span>
+                                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+                                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+                                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+                                                                                   <span class="n">volume</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">energy</span><span class="p">,</span> <span class="n">force</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_energy_forces_nufft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">,</span>
+                                                                     <span class="n">atomic_pos</span><span class="p">,</span>
+                                                                     <span class="n">ref_structure</span><span class="p">,</span>
+                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+                                                                     <span class="n">volume</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_stress</span><span class="p">:</span>
+                <span class="n">energy</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">stress</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_energy_forces_stress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">,</span>
+                                                                            <span class="n">atomic_pos</span><span class="p">,</span>
+                                                                            <span class="n">ref_structure</span><span class="p">,</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+                                                                            <span class="n">volume</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">energy</span><span class="p">,</span> <span class="n">force</span> <span class="o">=</span> <span class="n">julia</span><span class="o">.</span><span class="n">Main</span><span class="o">.</span><span class="n">get_energy_forces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">,</span> 
+                                                             <span class="n">atomic_pos</span><span class="p">,</span>
+                                                             <span class="n">ref_structure</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">,</span>
+                                                             <span class="n">volume</span><span class="p">)</span>
+
+            <span class="n">energy</span> <span class="o">*=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span>
+            <span class="n">force</span> <span class="o">*=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span>
+            <span class="k">if</span> <span class="n">stress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stress</span> <span class="o">*=</span> <span class="o">-</span><span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span><span class="o">**</span><span class="mi">3</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="n">force</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">stress</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Fallback to the slow python code</span>
+        <span class="n">n_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">N_atoms</span>
+
+        <span class="n">delta_r</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_structure</span><span class="o">.</span><span class="n">coords</span>
+
+        <span class="c1"># Remove the global translations (ASR)</span>
+        <span class="n">asr_delta_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">delta_r</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">delta_r</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">-=</span> <span class="n">asr_delta_r</span>
+        <span class="n">delta_r</span> <span class="o">*=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+
+        <span class="n">n_kpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="o">**</span><span class="mi">3</span>
+
+        <span class="n">energy</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="mi">0</span><span class="n">j</span>
+        <span class="n">force</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Energy calculation:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-------------------&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">kindex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_kpoints</span><span class="p">):</span>
+            <span class="n">kvect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span><span class="p">[</span><span class="n">kindex</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># Discard Gamma</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">kvect</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">k2</span> <span class="o">=</span> <span class="n">kvect</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kvect</span><span class="p">)</span>
+            
+            <span class="n">k_eps_k</span> <span class="o">=</span> <span class="n">kvect</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dielectric_tensor</span> <span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kvect</span><span class="p">))</span>
+            <span class="n">kk_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">kvect</span><span class="p">,</span> <span class="n">kvect</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">k_eps_k</span>
+
+            <span class="c1">#ZkkZ = np.einsum(&quot;ai, bj, ab -&gt; ij&quot;, self.work_charges, self.work_charges, kk_matrix)</span>
+            <span class="n">ZkkZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kk_matrix</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_charges</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;k point: &quot;</span><span class="p">,</span> <span class="n">kvect</span><span class="p">)</span>
+                <span class="c1">#print(&quot;ZkkZ:&quot;, ZkkZ)</span>
+
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+                    <span class="c1">#if i == j:</span>
+                    <span class="c1">#    continue</span>
+                    <span class="n">delta_rij</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">delta_rij</span> <span class="o">*=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">A_TO_BOHR</span>
+
+
+                    <span class="n">exp_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">)</span><span class="o">*</span> <span class="n">kvect</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">delta_rij</span><span class="p">))</span> <span class="o">/</span> <span class="mf">2.</span>
+                    <span class="n">cos_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">(</span><span class="n">exp_factor</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">exp_factor</span><span class="p">)))</span>
+                    <span class="n">sin_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">exp_factor</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">exp_factor</span><span class="p">)))</span>
+
+                    <span class="n">ZkkZr</span> <span class="o">=</span> <span class="n">ZkkZ</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">delta_r</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:])</span>
+
+                    <span class="n">energy</span> <span class="o">+=</span> <span class="n">delta_r</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ZkkZr</span><span class="p">)</span> <span class="o">*</span> <span class="n">exp_factor</span> 
+
+                    <span class="c1">#print(&quot;Energy k:&quot;,  delta_r[i, :].dot(ZkkZr) * exp_factor )</span>
+                    <span class="c1">#print(&quot;Force k:&quot;, ZkkZr * cos_factor + delta_r[i, :] * ZkkZr  * kvect *  sin_factor)</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error, energy is NaN&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i: </span><span class="si">{}</span><span class="s2">;  j: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;exp: &quot;</span><span class="p">,</span> <span class="n">exp_factor</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;k: &quot;</span><span class="p">,</span> <span class="n">kvect</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;delta R_ij: &quot;</span><span class="p">,</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">struct</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, energy is NaN&quot;</span><span class="p">)</span>
+
+
+                    <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">()</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;i = </span><span class="si">{}</span><span class="s2">; j = </span><span class="si">{}</span><span class="s2">; k = </span><span class="si">{}</span><span class="s2">;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">kvect</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tr(ZkkZ_exp) = &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">ZkkZ</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">exp_factor</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tr(d/dx ZkkZ_exp) = &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">ZkkZ</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span> <span class="n">sin_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">kvect</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span><span class="p">)</span> 
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;delta r_i = &quot;</span><span class="p">,</span> <span class="n">delta_r</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s2">&quot;delta r_j = &quot;</span><span class="p">,</span> <span class="n">delta_r</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:])</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;delta_rij = &quot;</span><span class="p">,</span> <span class="n">delta_rij</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sin_factor = &quot;</span><span class="p">,</span> <span class="n">sin_factor</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cos_factor = &quot;</span><span class="p">,</span> <span class="n">cos_factor</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;exp_factor = &quot;</span><span class="p">,</span> <span class="n">exp_factor</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ZkkZ r_j = &quot;</span><span class="p">,</span> <span class="n">ZkkZr</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;r_i ZkkZ r_j = &quot;</span><span class="p">,</span> <span class="n">delta_r</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ZkkZr</span><span class="p">))</span>
+
+                    <span class="n">force</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-=</span>  <span class="n">ZkkZr</span> <span class="o">*</span> <span class="n">cos_factor</span>
+                    <span class="n">force</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-=</span> <span class="n">delta_r</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ZkkZr</span><span class="p">)</span>  <span class="o">*</span> <span class="n">kvect</span> <span class="o">*</span>  <span class="n">sin_factor</span>
+
+                    <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current force:&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">force</span><span class="p">)</span> 
+                        <span class="nb">print</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="s2">&quot;Error, the energy has an imaginary part: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+
+        <span class="c1"># Remove from the forces the global translations</span>
+        <span class="n">force</span><span class="p">[:,:]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">force</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> 
+
+        <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Energy: </span><span class="si">{}</span><span class="s2">  | Total force:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">force</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">volume</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="n">force</span> <span class="o">*</span>  <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">volume</span> <span class="o">*</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">HA_TO_EV</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span>
+
+
+<div class="viewcode-block" id="ElectrostaticCalculator.calculate">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.calculator.ElectrostaticCalculator.calculate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The actual function called by the ASE calculator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error, calculator not initialized.&quot;</span><span class="p">)</span>
+
+        <span class="n">cc_struct</span> <span class="o">=</span> <span class="n">convert_to_cc_structure</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+
+        <span class="c1"># perform the actual calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_energy_force</span><span class="p">(</span><span class="n">cc_struct</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;free_energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_stress</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span></div>
+</div>
+
+
+        <span class="c1">#self.results[&quot;dipole&quot;] = self.get_dipole() </span>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

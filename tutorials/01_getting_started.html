@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial 1: Getting Started &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/tutorials/01_getting_started.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial 2: Supercell Calculations" href="02_supercell_calculations.html" />
+    <link rel="prev" title="Tutorials" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#tutorial-overview">Tutorial Overview</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Tutorial 1: Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-load-structure">Step 1: Load Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-initialize-calculator">Step 2: Initialize Calculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-compute-energy-and-forces">Step 3: Compute Energy and Forces</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#complete-example">Complete Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#tutorial-1-getting-started">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#tutorial-2-supercell-calculations">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#tutorial-3-composite-calculator">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#tutorial-4-sscha-with-electrostatics">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#example-files">Example Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial 1: Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-load-structure">Step 1: Load Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-initialize-calculator">Step 2: Initialize Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-compute-energy-and-forces">Step 3: Compute Energy and Forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Tutorial 1: Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/01_getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-1-getting-started">
+<h1>Tutorial 1: Getting Started<a class="headerlink" href="#tutorial-1-getting-started" title="Link to this heading"></a></h1>
+<p>Learn the basics of py-electrostatic: loading structures, initializing the calculator, and computing energy and forces.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>py-electrostatic installed</p></li>
+<li><p>BaTiO3 example files (included in repository)</p></li>
+</ul>
+</section>
+<section id="step-1-load-structure">
+<h2>Step 1: Load Structure<a class="headerlink" href="#step-1-load-structure" title="Link to this heading"></a></h2>
+<p>Load a structure with effective charges from a Quantum ESPRESSO dynamical matrix:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">CC</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.Phonons</span>
+
+<span class="n">dyn</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Phonons</span><span class="o">.</span><span class="n">Phonons</span><span class="p">(</span><span class="s2">&quot;BaTiO3_&quot;</span><span class="p">)</span>
+<span class="n">structure</span> <span class="o">=</span> <span class="n">dyn</span><span class="o">.</span><span class="n">structure</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Atoms: </span><span class="si">{</span><span class="n">structure</span><span class="o">.</span><span class="n">N_atoms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Charges shape: </span><span class="si">{</span><span class="n">dyn</span><span class="o">.</span><span class="n">effective_charges</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># (nat, 3, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dielectric:</span><span class="se">\n</span><span class="si">{</span><span class="n">dyn</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-initialize-calculator">
+<h2>Step 2: Initialize Calculator<a class="headerlink" href="#step-2-initialize-calculator" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyelectrostatic.calculator</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">calc</span>
+
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">ElectrostaticCalculator</span><span class="p">()</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.5</span>        <span class="c1"># Gaussian screening (Å)</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="mf">5.0</span>     <span class="c1"># k-point cutoff</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">init_from_phonons</span><span class="p">(</span><span class="n">dyn</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-compute-energy-and-forces">
+<h2>Step 3: Compute Energy and Forces<a class="headerlink" href="#step-3-compute-energy-and-forces" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get_ase_atoms</span><span class="p">()</span>
+<span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calculator</span>
+
+<span class="n">energy</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span>
+<span class="n">forces</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Energy: </span><span class="si">{</span><span class="n">energy</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max force: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">forces</span><span class="p">,</span><span class="w"> </span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV/Å&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="complete-example">
+<h2>Complete Example<a class="headerlink" href="#complete-example" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Tutorial 1: Getting Started with py-electrostatic</span>
+
+<span class="sd">This example shows the basic usage of py-electrostatic:</span>
+<span class="sd">1. Load a structure with effective charges</span>
+<span class="sd">2. Initialize the calculator</span>
+<span class="sd">3. Compute energy and forces</span>
+<span class="sd">4. Displace an atom and recompute</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">CC</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.Phonons</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyelectrostatic.calculator</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">calc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Change to the directory where this script is located</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tutorial 1: Getting Started&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+<span class="c1"># Step 1: Load the structure with effective charges</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1. Loading structure from dynamical matrix...&quot;</span><span class="p">)</span>
+<span class="n">dyn</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Phonons</span><span class="o">.</span><span class="n">Phonons</span><span class="p">(</span><span class="s2">&quot;BaTiO3_&quot;</span><span class="p">)</span>
+
+<span class="n">structure</span> <span class="o">=</span> <span class="n">dyn</span><span class="o">.</span><span class="n">structure</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Number of atoms: </span><span class="si">{</span><span class="n">structure</span><span class="o">.</span><span class="n">N_atoms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Atomic species: </span><span class="si">{</span><span class="n">structure</span><span class="o">.</span><span class="n">atoms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Unit cell (Å):</span><span class="se">\n</span><span class="si">{</span><span class="n">structure</span><span class="o">.</span><span class="n">unit_cell</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check effective charges and dielectric tensor</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">   Effective charges shape: </span><span class="si">{</span><span class="n">dyn</span><span class="o">.</span><span class="n">effective_charges</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Dielectric tensor:</span><span class="se">\n</span><span class="si">{</span><span class="n">dyn</span><span class="o">.</span><span class="n">dielectric_tensor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Step 2: Initialize the calculator</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2. Initializing calculator...&quot;</span><span class="p">)</span>
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">ElectrostaticCalculator</span><span class="p">()</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.5</span>        <span class="c1"># Gaussian screening parameter (Å)</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="mf">5.0</span>     <span class="c1"># k-point cutoff</span>
+
+<span class="c1"># Initialize from phonons (loads structure, charges, and dielectric)</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">init_from_phonons</span><span class="p">(</span><span class="n">dyn</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   eta = </span><span class="si">{</span><span class="n">calculator</span><span class="o">.</span><span class="n">eta</span><span class="si">}</span><span class="s2"> Å&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   cutoff = </span><span class="si">{</span><span class="n">calculator</span><span class="o">.</span><span class="n">cutoff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Number of k-points: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">kpoints</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Julia acceleration: </span><span class="si">{</span><span class="n">calc</span><span class="o">.</span><span class="n">is_julia_available</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Step 3: Compute energy and forces on reference structure</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3. Computing energy and forces on reference structure...&quot;</span><span class="p">)</span>
+<span class="n">atoms</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get_ase_atoms</span><span class="p">()</span>
+<span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calculator</span>
+
+<span class="n">energy</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span>
+<span class="n">forces</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Energy: </span><span class="si">{</span><span class="n">energy</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Max force magnitude: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">forces</span><span class="p">,</span><span class="w"> </span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV/Å&quot;</span><span class="p">)</span>
+
+<span class="c1"># Step 4: Displace an atom and recompute</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">4. Displacing first atom by 0.1 Å in x direction...&quot;</span><span class="p">)</span>
+<span class="n">displaced_structure</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">displaced_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.1</span>  <span class="c1"># Displace 0.1 Å in x</span>
+
+<span class="n">displaced_atoms</span> <span class="o">=</span> <span class="n">displaced_structure</span><span class="o">.</span><span class="n">get_ase_atoms</span><span class="p">()</span>
+<span class="n">displaced_atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calculator</span>
+
+<span class="n">new_energy</span> <span class="o">=</span> <span class="n">displaced_atoms</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span>
+<span class="n">new_forces</span> <span class="o">=</span> <span class="n">displaced_atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   New energy: </span><span class="si">{</span><span class="n">new_energy</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Energy change: </span><span class="si">{</span><span class="n">new_energy</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">energy</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Force on displaced atom: [</span><span class="si">{</span><span class="n">new_forces</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">new_forces</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">new_forces</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">] eV/Å&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Max force magnitude: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">new_forces</span><span class="p">,</span><span class="w"> </span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> eV/Å&quot;</span><span class="p">)</span>
+
+<span class="c1"># Step 5: Check acoustic sum rule</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">5. Checking acoustic sum rule (ASR)...&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">calculator</span><span class="o">.</span><span class="n">check_asr</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   ✓ Acoustic sum rule satisfied!&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   ✗ Acoustic sum rule violated: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tutorial 1 complete!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="running">
+<h2>Running<a class="headerlink" href="#running" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>01_basic_energy_force.py
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="02_supercell_calculations.html" class="btn btn-neutral float-right" title="Tutorial 2: Supercell Calculations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

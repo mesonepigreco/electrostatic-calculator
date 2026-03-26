@@ -1,0 +1,236 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal Theory Guide &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/user_guide/theory_minimal.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Parameter Guide" href="parameters.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Minimal Theory Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-problem">The Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#born-effective-charges">Born Effective Charges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dielectric-tensor">Dielectric Tensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ewald-summation">Ewald Summation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-parameters">Key Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#eta-a">eta (Å)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cutoff-dimensionless">cutoff (dimensionless)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-nufft">use_nufft</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#where-to-get-parameters">Where to Get Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Minimal Theory Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/theory_minimal.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="minimal-theory-guide">
+<h1>Minimal Theory Guide<a class="headerlink" href="#minimal-theory-guide" title="Link to this heading"></a></h1>
+<p>This guide provides the essential physics background needed to use py-electrostatic effectively. For a complete theoretical treatment, see the paper by Monacelli and Marzari <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<section id="the-problem">
+<h2>The Problem<a class="headerlink" href="#the-problem" title="Link to this heading"></a></h2>
+<p>In polar materials (like ferroelectrics), atoms carry effective charges that create long-range electrostatic interactions. These interactions decay slowly with distance (as 1/r³) and are crucial for:</p>
+<ul class="simple">
+<li><p>Phonon frequencies at long wavelengths</p></li>
+<li><p>Ferroelectric phase transitions</p></li>
+<li><p>Dielectric properties</p></li>
+<li><p>Accurate force fields</p></li>
+</ul>
+</section>
+<section id="born-effective-charges">
+<h2>Born Effective Charges<a class="headerlink" href="#born-effective-charges" title="Link to this heading"></a></h2>
+<p>The <strong>Born effective charge tensor</strong> Z* describes how an atom’s charge distribution responds to an electric field:</p>
+<div class="math notranslate nohighlight">
+\[Z^*_{i,\alpha\beta} = \frac{\partial p_\alpha}{\partial r_{i,\beta}}\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(i\)</span> is the atom index</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha, \beta\)</span> are Cartesian directions (x, y, z)</p></li>
+<li><p><span class="math notranslate nohighlight">\(p_\alpha\)</span> is the polarization in direction <span class="math notranslate nohighlight">\(\alpha\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(r_{i,\beta}\)</span> is the position of atom <span class="math notranslate nohighlight">\(i\)</span> in direction <span class="math notranslate nohighlight">\(\beta\)</span></p></li>
+</ul>
+<p><strong>Key properties:</strong></p>
+<ul class="simple">
+<li><p>Z* is a 3×3 tensor for each atom (9 numbers)</p></li>
+<li><p>It can be computed from first principles (DFT) using codes like Quantum ESPRESSO</p></li>
+<li><p>The acoustic sum rule requires: <span class="math notranslate nohighlight">\(\sum_i Z^*_{i,\alpha\beta} = 0\)</span> for each <span class="math notranslate nohighlight">\(\alpha, \beta\)</span></p></li>
+</ul>
+</section>
+<section id="dielectric-tensor">
+<h2>Dielectric Tensor<a class="headerlink" href="#dielectric-tensor" title="Link to this heading"></a></h2>
+<p>The <strong>high-frequency dielectric tensor</strong> <span class="math notranslate nohighlight">\(\varepsilon_\infty\)</span> describes how the material polarizes in response to an electric field when atoms are held fixed:</p>
+<div class="math notranslate nohighlight">
+\[P_\alpha = \varepsilon_0 \sum_\beta (\varepsilon_{\infty,\alpha\beta} - \delta_{\alpha\beta}) E_\beta\]</div>
+<p>This is typically a 3×3 symmetric matrix obtained from DFT calculations.</p>
+</section>
+<section id="ewald-summation">
+<h2>Ewald Summation<a class="headerlink" href="#ewald-summation" title="Link to this heading"></a></h2>
+<p>Computing long-range interactions in periodic systems requires special techniques. The <strong>Ewald summation</strong> splits the interaction into:</p>
+<ol class="arabic simple">
+<li><p><strong>Real-space part</strong>: Short-range, converges quickly</p></li>
+<li><p><strong>Reciprocal-space part</strong>: Long-range, computed in Fourier space</p></li>
+</ol>
+<p>py-electrostatic uses an optimized k-space summation with Gaussian charge screening.</p>
+</section>
+<section id="key-parameters">
+<h2>Key Parameters<a class="headerlink" href="#key-parameters" title="Link to this heading"></a></h2>
+<section id="eta-a">
+<h3>eta (Å)<a class="headerlink" href="#eta-a" title="Link to this heading"></a></h3>
+<p>The Gaussian screening parameter. Controls the balance between real-space and k-space convergence:</p>
+<ul class="simple">
+<li><p><strong>Smaller η</strong>: More k-points needed, faster real-space convergence</p></li>
+<li><p><strong>Larger η</strong>: Fewer k-points, slower real-space convergence</p></li>
+<li><p><strong>Typical values</strong>: 0.5-1.0 Å for most materials</p></li>
+</ul>
+</section>
+<section id="cutoff-dimensionless">
+<h3>cutoff (dimensionless)<a class="headerlink" href="#cutoff-dimensionless" title="Link to this heading"></a></h3>
+<p>Determines how many k-points to include:</p>
+<ul class="simple">
+<li><p>Include all k-points with <span class="math notranslate nohighlight">\(|k| &lt; \text{cutoff}/\eta\)</span></p></li>
+<li><p><strong>Typical values</strong>: 3-5</p></li>
+<li><p>Higher values = more accurate but slower</p></li>
+</ul>
+</section>
+<section id="use-nufft">
+<h3>use_nufft<a class="headerlink" href="#use-nufft" title="Link to this heading"></a></h3>
+<p>Enable Non-Uniform FFT for O(N²) scaling:</p>
+<ul class="simple">
+<li><p><strong>True</strong> (default): Faster for large systems (&gt;50 atoms)</p></li>
+<li><p><strong>False</strong>: Standard O(N³) method, good for small systems</p></li>
+</ul>
+</section>
+</section>
+<section id="where-to-get-parameters">
+<h2>Where to Get Parameters<a class="headerlink" href="#where-to-get-parameters" title="Link to this heading"></a></h2>
+<p>Born charges and dielectric tensors are typically computed with:</p>
+<ul class="simple">
+<li><p><strong>Quantum ESPRESSO</strong>: Use <code class="docutils literal notranslate"><span class="pre">ph.x</span></code> with <code class="docutils literal notranslate"><span class="pre">epsil=.true.</span></code></p></li>
+<li><p><strong>VASP</strong>: Set <code class="docutils literal notranslate"><span class="pre">LEPSILON</span> <span class="pre">=</span> <span class="pre">.TRUE.</span></code></p></li>
+<li><p><strong>ABINIT</strong>: Use <code class="docutils literal notranslate"><span class="pre">rfelfd</span> <span class="pre">1</span></code></p></li>
+</ul>
+<p>These are saved in dynamical matrix files that CellConstructor can read.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="12">
+<li><p>Monacelli and N. Marzari, <em>Electrostatic interactions in atomistic and machine-learned potentials for polar materials</em>, Phys. Rev. B 107, 245427 (2023).</p></li>
+</ol>
+</aside>
+</aside>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="parameters.html" class="btn btn-neutral float-right" title="Parameter Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

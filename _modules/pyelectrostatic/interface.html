@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyelectrostatic.interface &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/_modules/pyelectrostatic/interface.html" />
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyelectrostatic.interface</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyelectrostatic.interface</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyelectrostatic</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyelectrostatic.calculator</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">calculator</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">CC</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor.calculators</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module is to interface pyelectrostatic with other codes</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="get_forceset_from_phonopy_disp">
+<a class="viewcode-back" href="../../api_reference/index.html#pyelectrostatic.interface.get_forceset_from_phonopy_disp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_forceset_from_phonopy_disp</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">disp_file</span> <span class="o">=</span> <span class="s2">&quot;phonopy_disp.yaml&quot;</span><span class="p">,</span> <span class="n">forceset_file</span> <span class="o">=</span> <span class="s2">&quot;FORCE_SETS&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a phonopy_disp.yalm file, and use the given ASE calculator to write the FORCE_SET file</span>
+<span class="sd">    This can be used to interface the code with phonopy for phonon calculation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">        calculator : ASE or cellconstructor calculator.</span>
+<span class="sd">            The calculator used to compute forces and energies</span>
+<span class="sd">        disp_file : string</span>
+<span class="sd">            Path to the file phonopy_disp.yaml that contains info about the displacements.</span>
+<span class="sd">        forceset_file : string</span>
+<span class="sd">            Path to the output file on which to write the FORCE_SET file. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">read_units</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">read_supercell</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">read_lattice</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">read_atoms</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">read_displacements</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">lattice_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">atoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">displacements</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">length_unit</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">fc_unit</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">disp_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fp</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+            <span class="c1"># Crop the comments</span>
+            <span class="k">if</span> <span class="s2">&quot;#&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span> <span class="n">line</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)]</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;supercell:&quot;</span><span class="p">:</span>
+                <span class="n">read_supercell</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">read_units</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">continue</span> 
+
+            <span class="k">if</span> <span class="s2">&quot;physical_unit&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">read_units</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">read_supercell</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="n">read_units</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;length&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">length_unit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="s1">&#39;force_constants&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span> 
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">fc_unit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">read_supercell</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="s2">&quot;lattice:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">read_lattice</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">read_atoms</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">read_displacements</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="s2">&quot;points:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">read_atoms</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">read_lattice</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">read_displacements</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="s2">&quot;displacements:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">read_atoms</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">read_lattice</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">read_displacements</span> <span class="o">=</span> <span class="kc">True</span> 
+                <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+
+            
+            <span class="k">if</span> <span class="n">read_lattice</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LINE: &quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">lattice_vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,:]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]]</span>
+                    <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="n">read_atoms</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;symbol&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="s2">&quot;coordinates&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>                
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]]))</span>
+        
+            <span class="k">if</span> <span class="n">read_displacements</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s1">&#39;[ &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span> <span class="s1">&#39; ]&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s2">&quot;atom&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                    <span class="n">displacements</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;atm&quot;</span> <span class="p">:</span> <span class="n">index</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;disp&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]])})</span>
+
+
+    <span class="c1"># Get the conversion factors</span>
+    <span class="n">c_len</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">c_force</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">length_unit</span> <span class="o">==</span> <span class="s2">&quot;au&quot;</span><span class="p">:</span>
+        <span class="n">c_len</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span>
+
+    <span class="k">if</span> <span class="n">fc_unit</span> <span class="o">==</span> <span class="s2">&quot;Ry/au^2&quot;</span><span class="p">:</span>
+        <span class="n">c_force</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">RY_TO_EV</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">c_len</span>
+    <span class="k">elif</span> <span class="n">fc_unit</span> <span class="o">==</span> <span class="s2">&quot;hartree/au^2&quot;</span><span class="p">:</span>
+        <span class="n">c_force</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">RY_TO_EV</span><span class="o">*</span><span class="mi">2</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">c_len</span>
+    <span class="k">elif</span> <span class="n">fc_unit</span> <span class="o">==</span> <span class="s2">&quot;mRy/au^2&quot;</span><span class="p">:</span>
+        <span class="n">c_force</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">RY_TO_EV</span><span class="o">*</span><span class="mi">1000</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">c_len</span>
+    <span class="k">elif</span> <span class="n">fc_unit</span> <span class="o">==</span> <span class="s2">&quot;hartree/Angstrom.au&quot;</span><span class="p">:</span>
+        <span class="n">c_force</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">RY_TO_EV</span><span class="o">*</span><span class="mi">2</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span> <span class="o">*</span> <span class="n">c_len</span>
+    <span class="k">elif</span> <span class="n">fc_unit</span> <span class="o">==</span> <span class="s2">&quot;eV/Angstrom.au&quot;</span><span class="p">:</span>
+        <span class="n">c_force</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">CC</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">BOHR_TO_ANGSTROM</span> <span class="o">*</span> <span class="n">c_len</span>
+
+
+    
+    <span class="c1"># Create the centroid structure</span>
+    <span class="n">centroid</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Structure</span><span class="o">.</span><span class="n">Structure</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+    <span class="n">centroid</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
+    <span class="n">centroid</span><span class="o">.</span><span class="n">coords</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Methods</span><span class="o">.</span><span class="n">cryst_to_cart</span><span class="p">(</span><span class="n">lattice_vectors</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span> <span class="o">*</span> <span class="n">c_len</span>
+    <span class="n">centroid</span><span class="o">.</span><span class="n">has_unit_cell</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">centroid</span><span class="o">.</span><span class="n">unit_cell</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">lattice_vectors</span> <span class="o">*</span> <span class="n">c_len</span>
+
+
+    <span class="c1"># Prepare the displaced structures and compute the forces</span>
+    <span class="n">forces</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">displacements</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">disp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluating displacement:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">disp</span><span class="p">)</span>
+        <span class="n">disp_structure</span> <span class="o">=</span> <span class="n">centroid</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">disp_structure</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">disp</span><span class="p">[</span><span class="s2">&quot;atm&quot;</span><span class="p">],</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">disp</span><span class="p">[</span><span class="s2">&quot;disp&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_len</span>
+
+
+        <span class="c1"># Compute with the calculator</span>
+        <span class="n">energ</span><span class="p">,</span> <span class="n">force</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">get_energy_forces</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">disp_structure</span><span class="p">)</span>
+
+        <span class="n">forces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">force</span><span class="p">)</span>
+
+    
+    <span class="c1"># Now write the output file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">forceset_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">centroid</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">displacements</span><span class="p">)))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">disp</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">displacements</span><span class="p">,</span> <span class="n">forces</span><span class="p">)):</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">disp</span><span class="p">[</span><span class="s2">&quot;atm&quot;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:20.16f}</span><span class="s2"> </span><span class="si">{:20.16f}</span><span class="s2"> </span><span class="si">{:20.16f}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">disp</span><span class="p">[</span><span class="s2">&quot;disp&quot;</span><span class="p">])))</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">centroid</span><span class="o">.</span><span class="n">N_atoms</span><span class="p">):</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:16.8f}</span><span class="s2"> </span><span class="si">{:16.8f}</span><span class="s2"> </span><span class="si">{:16.8f}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">force</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/</span> <span class="n">c_force</span><span class="p">)))</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+
+
+            
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
