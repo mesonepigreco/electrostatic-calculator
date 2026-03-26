@@ -34,7 +34,7 @@ try:
     julia.Main.include(os.path.join(os.path.dirname(__file__), 
         "fast_calculator.jl"))
     __JULIA_EXT__ = True
-    julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+    #julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
     julia.Main.include(os.path.join(os.path.dirname(__file__),
         "nufft_calculator.jl"))
     __NUFFT_JULIA_EXT__ = True
@@ -48,7 +48,7 @@ except Exception as e:
             julia.Main.include(os.path.join(os.path.dirname(__file__),
                 "fast_calculator.jl"))
             __JULIA_EXT__ = True
-            julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+            #julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
             julia.Main.include(os.path.join(os.path.dirname(__file__),
                 "nufft_calculator.jl"))
             __NUFFT_JULIA_EXT__ = True
@@ -59,7 +59,7 @@ except Exception as e:
                 julia.Main.include(os.path.join(os.path.dirname(__file__),
                     "fast_calculator.jl"))
                 __JULIA_EXT__ = True
-                julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+                #julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
                 julia.Main.include(os.path.join(os.path.dirname(__file__),
                     "nufft_calculator.jl"))
                 __NUFFT_JULIA_EXT__ = True
@@ -172,7 +172,7 @@ class ElectrostaticCalculator(Calculator):
         self.cutoff = 5  # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
-        self.use_nufft = False  # Use NUFFT-based calculation (O(N²) instead of O(N³))
+        self.use_nufft = True# Use NUFFT-based calculation (O(N²) instead of O(N³))
         self.initialized = False
         self.implemented_properties = ["energy", "forces", "stress"]
 
@@ -196,7 +196,7 @@ class ElectrostaticCalculator(Calculator):
              dielectric_tensor: np.ndarray,
              unique_atom_element : str = None,
              supercell: tuple[int, int, int] = (1, 1, 1),
-             use_nufft: bool = False) -> None:
+             use_nufft: bool = True) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================

@@ -67,21 +67,12 @@ def benchmark_with_warmup(supercell_size, ba_tio3):
     
     # Warm-up run (compilation)
     t0 = time.time()
-    _ = atm.get_total_energy()
+    energy_orig = atm.get_total_energy()
+    forces_orig = atm.get_forces()
     t1 = time.time()
-    print(f"    Warm-up (with JIT): {t1-t0:.4f}s")
-    
+    time_orig = t1- t0
     # Timed runs (after compilation)
-    times_orig = []
-    for i in range(2):
-        t0 = time.time()
-        energy_orig = atm.get_total_energy()
-        forces_orig = atm.get_forces()
-        t1 = time.time()
-        times_orig.append(t1 - t0)
-    
-    time_orig = np.median(times_orig)
-    print(f"    Execution time (median of 2): {time_orig:.4f}s")
+    print(f"    Execution time: {time_orig:.4f}s")
     
     # NUFFT: Warm-up then time
     print("  NUFFT implementation:")
@@ -89,22 +80,12 @@ def benchmark_with_warmup(supercell_size, ba_tio3):
     
     # Warm-up run (compilation)
     t0 = time.time()
-    _ = atm.get_total_energy()
+    energy_nufft = atm.get_total_energy()
+    forces_nufft = atm.get_forces()
     t1 = time.time()
-    print(f"    Warm-up (with JIT): {t1-t0:.4f}s")
-    
-    # Timed runs (after compilation)
-    times_nufft = []
-    for i in range(2):
-        t0 = time.time()
-        energy_nufft = atm.get_total_energy()
-        forces_nufft = atm.get_forces()
-        t1 = time.time()
-        times_nufft.append(t1 - t0)
-    
-    time_nufft = np.median(times_nufft)
-    print(f"    Execution time (median of 2): {time_nufft:.4f}s")
-    
+    time_nufft = t1 - t0
+    print(f"    Execution time: {t1-t0:.4f}s")
+
     # Accuracy check
     energy_diff = abs(energy_orig - energy_nufft) / abs(energy_orig)
     force_diff = np.max(np.abs(forces_orig - forces_nufft)) / np.max(np.abs(forces_orig))
@@ -144,7 +125,7 @@ def main():
     print("      the execution time measurement.")
     
     # Test all supercells
-    supercell_sizes = [(2, 2, 2), (3, 3, 3), (4, 4, 4)]  # Testing with 2 sizes for speed
+    supercell_sizes = [(1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4)]  # Testing with 2 sizes for speed
     
     results = []
     for size in supercell_sizes:
