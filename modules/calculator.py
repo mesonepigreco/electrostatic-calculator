@@ -15,6 +15,7 @@ from typing import List, Union
 
 
 __JULIA_EXT__ = False
+__FFT_JULIA_EXT__ = False
 JULIA_ERROR = """
 Error in initializing the Julia extension.
     Please install Julia and the required modules with:
@@ -25,11 +26,18 @@ Error in initializing the Julia extension.
 
     Details on error: {}
 """
+
+_JULIA_PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 try:
     import julia, julia.Main
     julia.Main.include(os.path.join(os.path.dirname(__file__), 
         "fast_calculator.jl"))
     __JULIA_EXT__ = True
+    julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+    julia.Main.include(os.path.join(os.path.dirname(__file__),
+        "nufft_calculator.jl"))
+    __NUFFT_JULIA_EXT__ = True
 except Exception as e:
     try:
         import julia
@@ -40,6 +48,10 @@ except Exception as e:
             julia.Main.include(os.path.join(os.path.dirname(__file__),
                 "fast_calculator.jl"))
             __JULIA_EXT__ = True
+            julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+            julia.Main.include(os.path.join(os.path.dirname(__file__),
+                "nufft_calculator.jl"))
+            __NUFFT_JULIA_EXT__ = True
         except:
             # Install the required modules
             julia.install()
@@ -47,6 +59,10 @@ except Exception as e:
                 julia.Main.include(os.path.join(os.path.dirname(__file__),
                     "fast_calculator.jl"))
                 __JULIA_EXT__ = True
+                julia.Main.eval(f'using Pkg; Pkg.activate("{_JULIA_PROJECT_PATH}")')
+                julia.Main.include(os.path.join(os.path.dirname(__file__),
+                    "nufft_calculator.jl"))
+                __NUFFT_JULIA_EXT__ = True
             except Exception as e:
 
                 warnings.warn(JULIA_ERROR.format(e))
@@ -156,6 +172,7 @@ class ElectrostaticCalculator(Calculator):
         self.cutoff = 5  # Stop the sum when k > cutoff / eta
         self.kpoints = None
         self.julia_speedup = True  
+        self.use_nufft = False  # Use NUFFT-based calculation (O(N²) instead of O(N³))
         self.initialized = False
         self.implemented_properties = ["energy", "forces", "stress"]
 
@@ -178,7 +195,8 @@ class ElectrostaticCalculator(Calculator):
              effective_charges: np.ndarray,
              dielectric_tensor: np.ndarray,
              unique_atom_element : str = None,
-             supercell: tuple[int, int, int] = (1, 1, 1)) -> None:
+             supercell: tuple[int, int, int] = (1, 1, 1),
+             use_nufft: bool = False) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================
@@ -210,7 +228,12 @@ class ElectrostaticCalculator(Calculator):
                 There must be just one per cell
                 If None, the first atom is used.
                 TODO: find a better way!
+            use_nufft : bool
+                If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.
+                If False, use the standard k-point summation which scales as O(N³).
         """
+        
+        self.use_nufft = use_nufft
 
         self.uc_structure = reference_structure.copy()
         self.unique_atom_element = unique_atom_element
@@ -269,7 +292,7 @@ class ElectrostaticCalculator(Calculator):
             new_uc_structure.change_unit_cell(new_unit_cell)
 
             # Initialize again the calculator with the new cell
-            self.init(new_uc_structure, self.uc_effective_charges, self.dielectric_tensor, self.unique_atom_element, self.supercell)
+            self.init(new_uc_structure, self.uc_effective_charges, self.dielectric_tensor, self.unique_atom_element, self.supercell, use_nufft=self.use_nufft)
 
         # Shift the structure to have the unique element at the center
         unique_index = -1
@@ -374,7 +397,8 @@ class ElectrostaticCalculator(Calculator):
         self.initialized = True
 
     def init_from_phonons(self, dynamical_matrix: CC.Phonons.Phonons,
-                          unique_atom_element : str = None) -> None:
+                          unique_atom_element : str = None,
+                          use_nufft: bool = False) -> None:
         """
         INITIALIZE THE CALCULATOR
         =========================
@@ -393,6 +417,8 @@ class ElectrostaticCalculator(Calculator):
         - unique_atom_element: 
             the string of unique atom element in the structure 
             (default: None, the first atom is used)
+        - use_nufft : bool
+            If True, use NUFFT-based calculation which scales as O(N²) for fixed cell.
 
         """
 
@@ -409,7 +435,8 @@ class ElectrostaticCalculator(Calculator):
                   dynamical_matrix.effective_charges,
                   dynamical_matrix.dielectric_tensor,
                   unique_atom_element=un,
-                  supercell=dynamical_matrix.GetSupercell())
+                  supercell=dynamical_matrix.GetSupercell(),
+                  use_nufft=use_nufft)
 
     def check_asr(self, threshold: float = 1e-6) -> None:
         """
@@ -555,9 +582,29 @@ class ElectrostaticCalculator(Calculator):
             atomic_pos = struct.coords * CC.Units.A_TO_BOHR
             volume = struct.get_volume() * CC.Units.A_TO_BOHR**3
             ref_structure = self.reference_structure.coords * CC.Units.A_TO_BOHR
+            unit_cell = self.reference_structure.unit_cell * CC.Units.A_TO_BOHR
             stress = None
 
-            if self.compute_stress:
+            if self.use_nufft and __JULIA_EXT__:
+                # NUFFT-based calculation for energy and forces
+                # This achieves O(Nₖ × N) complexity instead of O(Nₖ × N²)
+                if self.compute_stress:
+                    energy, force, stress = julia.Main.get_energy_forces_nufft_stress(self.kpoints,
+                                                                                   atomic_pos,
+                                                                                   ref_structure,
+                                                                                   self.work_charges,
+                                                                                   self.dielectric_tensor,
+                                                                                   self.eta * CC.Units.A_TO_BOHR,
+                                                                                   volume)
+                else:
+                    energy, force = julia.Main.get_energy_forces_nufft(self.kpoints,
+                                                                     atomic_pos,
+                                                                     ref_structure,
+                                                                     self.work_charges,
+                                                                     self.dielectric_tensor,
+                                                                     self.eta * CC.Units.A_TO_BOHR,
+                                                                     volume)
+            elif self.compute_stress:
                 energy, force, stress = julia.Main.get_energy_forces_stress(self.kpoints,
                                                                             atomic_pos,
                                                                             ref_structure,
@@ -576,7 +623,8 @@ class ElectrostaticCalculator(Calculator):
 
             energy *= CC.Units.HA_TO_EV
             force *= CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM
-            stress *= -CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
+            if stress is not None:
+                stress *= -CC.Units.HA_TO_EV / CC.Units.BOHR_TO_ANGSTROM**3
             self.energy = energy
             self.force = force
             self.stress = stress
