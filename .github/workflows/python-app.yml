@@ -40,9 +40,6 @@ jobs:
         pip install meson meson-python ninja
         pip install --no-build-isolation cellconstructor
 
-        # Avoid to include CellConstructor in the test
-        rm -r CellConstructor
-        
         # Install julia requirements
         python -c 'import julia; julia.install()'
         
