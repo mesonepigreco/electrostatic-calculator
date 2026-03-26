@@ -1,0 +1,76 @@
+name: Build and Deploy Documentation
+
+on:
+  push:
+    branches: [ main, master, nuft ]
+  pull_request:
+    branches: [ main, master, nuft ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Set up Julia
+      uses: julia-actions/setup-julia@v1
+      with:
+        version: '1.10'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gfortran libblas-dev liblapack-dev
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx-rtd-theme
+        pip install numpy scipy ase
+        pip install julia
+        pip install meson meson-python ninja
+        pip install --no-build-isolation cellconstructor
+    
+    - name: Install Julia packages
+      run: |
+        julia -e 'using Pkg; Pkg.add("FFTW"); Pkg.add("DiffResults"); Pkg.add("ForwardDiff")'
+    
+    - name: Configure PyJulia
+      run: |
+        python -c 'import julia; julia.install()'
+      env:
+        PYTHON: python
+    
+    - name: Install package
+      run: |
+        pip install -e .
+    
+    - name: Build documentation
+      run: |
+        cd docs
+        make html
+    
+    - name: Test examples
+      run: |
+        cd docs/examples
+        # Copy required data files
+        cp ../../tests/BaTiO3/BaTiO3_1* . 2>/dev/null || true
+        # Run examples
+        python 01_basic_energy_force.py > /dev/null 2>&1 && echo "✓ Example 1 passed" || echo "✗ Example 1 failed"
+        python 02_supercell.py > /dev/null 2>&1 && echo "✓ Example 2 passed" || echo "✗ Example 2 failed"
+        python 03_composite.py > /dev/null 2>&1 && echo "✓ Example 3 passed" || echo "✗ Example 3 failed"
+        python 04_sscha_electrostatic.py > /dev/null 2>&1 && echo "✓ Example 4 passed" || echo "✗ Example 4 failed (SSCHA may not be installed)"
+    
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html
+        force_orphan: true

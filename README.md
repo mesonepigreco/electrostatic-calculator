@@ -1,6 +1,15 @@
 # Electrostatic Calculator
-A python calculator that can calculate the electrostatic long-range forces and stress tensor from Born effective charges and the dielectric tensor. 
+A python calculator that can calculate the electrostatic long-range forces and stress tensor from Born effective charges and the dielectric tensor.
 
+## Documentation
+
+Full documentation is available at: **https://mesonepigreco.github.io/py-electrostatic/**
+
+The documentation includes:
+- Installation guide
+- Tutorials (getting started, supercells, composite calculator, SSCHA integration)
+- API reference
+- Theory guide
 
 ## Requirements
 
