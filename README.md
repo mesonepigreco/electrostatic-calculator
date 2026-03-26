@@ -1,6 +1,13 @@
 # Electrostatic Calculator
 A python calculator that can calculate the electrostatic long-range forces and stress tensor from Born effective charges and the dielectric tensor.
 
+## Citation
+
+If you use this code in your research, please cite:
+
+**L. Monacelli and N. Marzari**, *Electrostatic interactions in atomistic and machine-learned potentials for polar materials*, **Phys. Rev. B 113, 094101 (2026)**.  
+[https://doi.org/10.1103/7ygl-8db2](https://doi.org/10.1103/7ygl-8db2)
+
 ## Documentation
 
 Full documentation is available at: **https://mesonepigreco.github.io/py-electrostatic/**
