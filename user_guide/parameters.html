@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parameter Guide &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/user_guide/parameters.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=10f1778b"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="../tutorials/index.html" />
+    <link rel="prev" title="Minimal Theory Guide" href="theory_minimal.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parameter Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#electrostaticcalculator-parameters">ElectrostaticCalculator Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#eta">eta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cutoff">cutoff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-nufft">use_nufft</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compute-stress">compute_stress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#julia-speedup">julia_speedup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supercell">supercell</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unique-atom-element">unique_atom_element</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#convergence-checking">Convergence Checking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recommended-starting-values">Recommended Starting Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-issues">Common Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#no-k-points-for-the-sum">“No k-points for the sum”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#energy-not-converged">Energy not converged</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slow-calculations">Slow calculations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Parameter Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/parameters.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="parameter-guide">
+<h1>Parameter Guide<a class="headerlink" href="#parameter-guide" title="Link to this heading"></a></h1>
+<p>This guide explains all the key parameters in py-electrostatic and how to choose them.</p>
+<section id="electrostaticcalculator-parameters">
+<h2>ElectrostaticCalculator Parameters<a class="headerlink" href="#electrostaticcalculator-parameters" title="Link to this heading"></a></h2>
+<section id="eta">
+<h3>eta<a class="headerlink" href="#eta" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: float (Angstroms)
+<strong>Default</strong>: 6.0</p>
+<p>The Gaussian screening parameter for Ewald summation. Controls the width of the Gaussian charge distribution used to screen the Coulomb interaction.</p>
+<p><strong>How to choose:</strong></p>
+<ul class="simple">
+<li><p>Start with 0.5-1.0 Å for most materials</p></li>
+<li><p>Smaller values need more k-points but give better accuracy</p></li>
+<li><p>Larger values are faster but less accurate</p></li>
+<li><p>Check convergence by varying η and monitoring energy/forces</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">ElectrostaticCalculator</span><span class="p">()</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># Good starting value</span>
+</pre></div>
+</div>
+</section>
+<section id="cutoff">
+<h3>cutoff<a class="headerlink" href="#cutoff" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: float (dimensionless)
+<strong>Default</strong>: 5.0</p>
+<p>Determines the k-point cutoff for the reciprocal space sum. Include all k-points with <span class="math notranslate nohighlight">\(|k| &lt; \text{cutoff}/\eta\)</span>.</p>
+<p><strong>How to choose:</strong></p>
+<ul class="simple">
+<li><p>Start with 3.0-5.0</p></li>
+<li><p>Higher values = more accurate but slower</p></li>
+<li><p>Check convergence by increasing until energy stabilizes</p></li>
+<li><p>For small cells, may need larger values</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># Include k-points up to |k| &lt; 5/η</span>
+</pre></div>
+</div>
+</section>
+<section id="use-nufft">
+<h3>use_nufft<a class="headerlink" href="#use-nufft" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: bool
+<strong>Default</strong>: True</p>
+<p>Enable Non-Uniform FFT for O(N²) scaling instead of O(N³).</p>
+<p><strong>When to use:</strong></p>
+<ul class="simple">
+<li><p><strong>True</strong>: Large systems (&gt;50 atoms), faster for big supercells</p></li>
+<li><p><strong>False</strong>: Small systems, debugging, or when Julia is not available</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">dielectric</span><span class="p">,</span>
+                <span class="n">supercell</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">use_nufft</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="compute-stress">
+<h3>compute_stress<a class="headerlink" href="#compute-stress" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: bool
+<strong>Default</strong>: False (auto-detected based on Julia availability)</p>
+<p>Enable stress tensor calculation. Requires Julia.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span><span class="o">.</span><span class="n">compute_stress</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Enable stress calculation</span>
+</pre></div>
+</div>
+</section>
+<section id="julia-speedup">
+<h3>julia_speedup<a class="headerlink" href="#julia-speedup" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: bool
+<strong>Default</strong>: True</p>
+<p>Use Julia backend for accelerated calculations. Automatically disabled if Julia is not available.</p>
+</section>
+<section id="supercell">
+<h3>supercell<a class="headerlink" href="#supercell" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: tuple(int, int, int)
+<strong>Default</strong>: (1, 1, 1)</p>
+<p>The supercell dimensions when working with supercells. The calculator will automatically replicate the primitive cell effective charges.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">primitive_structure</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">dielectric</span><span class="p">,</span>
+                <span class="n">supercell</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># 2x2x2 supercell</span>
+</pre></div>
+</div>
+</section>
+<section id="unique-atom-element">
+<h3>unique_atom_element<a class="headerlink" href="#unique-atom-element" title="Link to this heading"></a></h3>
+<p><strong>Type</strong>: str
+<strong>Default</strong>: None (uses first atom)</p>
+<p>The atomic species used to identify the origin of the structure. There should be exactly one per primitive cell. Used for proper supercell handling.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calculator</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">dielectric</span><span class="p">,</span>
+                <span class="n">unique_atom_element</span><span class="o">=</span><span class="s2">&quot;Ba&quot;</span><span class="p">)</span>  <span class="c1"># Use Ba as reference</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="convergence-checking">
+<h2>Convergence Checking<a class="headerlink" href="#convergence-checking" title="Link to this heading"></a></h2>
+<p>Use the utility functions to check parameter convergence:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyelectrostatic.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">study_cutoff_convergence</span>
+
+<span class="c1"># Check how energy converges with cutoff</span>
+<span class="n">energies</span><span class="p">,</span> <span class="n">cutoffs</span> <span class="o">=</span> <span class="n">study_cutoff_convergence</span><span class="p">(</span>
+    <span class="n">structure</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">dielectric</span><span class="p">,</span>
+    <span class="n">eta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="recommended-starting-values">
+<h2>Recommended Starting Values<a class="headerlink" href="#recommended-starting-values" title="Link to this heading"></a></h2>
+<p>For most polar materials:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Starting Value</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>eta</p></td>
+<td><p>0.5-1.0 Å</p></td>
+<td><p>Smaller for accuracy, larger for speed</p></td>
+</tr>
+<tr class="row-odd"><td><p>cutoff</p></td>
+<td><p>5.0</p></td>
+<td><p>Increase if not converged</p></td>
+</tr>
+<tr class="row-even"><td><p>use_nufft</p></td>
+<td><p>True</p></td>
+<td><p>Use False only for small systems</p></td>
+</tr>
+<tr class="row-odd"><td><p>compute_stress</p></td>
+<td><p>True (if Julia available)</p></td>
+<td><p>Needed for variable cell calculations</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-issues">
+<h2>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading"></a></h2>
+<section id="no-k-points-for-the-sum">
+<h3>“No k-points for the sum”<a class="headerlink" href="#no-k-points-for-the-sum" title="Link to this heading"></a></h3>
+<p>The cell is too small for the given eta. Solutions:</p>
+<ul class="simple">
+<li><p>Decrease eta (try 0.3-0.5)</p></li>
+<li><p>Increase cutoff</p></li>
+<li><p>Use a supercell</p></li>
+</ul>
+</section>
+<section id="energy-not-converged">
+<h3>Energy not converged<a class="headerlink" href="#energy-not-converged" title="Link to this heading"></a></h3>
+<p>Increase cutoff gradually until energy changes by &lt; 1e-6 eV/atom.</p>
+</section>
+<section id="slow-calculations">
+<h3>Slow calculations<a class="headerlink" href="#slow-calculations" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Enable use_nufft=True (requires Julia)</p></li>
+<li><p>Increase eta slightly</p></li>
+<li><p>Decrease cutoff (if accuracy allows)</p></li>
+<li><p>Use Julia acceleration</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="theory_minimal.html" class="btn btn-neutral float-left" title="Minimal Theory Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tutorials/index.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

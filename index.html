@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>py-electrostatic: Long-range Electrostatics for Polar Materials &mdash; py-electrostatic 0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://mesonepigreco.github.io/py-electrostatic/index.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=10f1778b"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="user_guide/installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            py-electrostatic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/theory_minimal.html">Minimal Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/parameters.html">Parameter Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/01_getting_started.html">Tutorial 1: Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">py-electrostatic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">py-electrostatic: Long-range Electrostatics for Polar Materials</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="py-electrostatic-long-range-electrostatics-for-polar-materials">
+<h1>py-electrostatic: Long-range Electrostatics for Polar Materials<a class="headerlink" href="#py-electrostatic-long-range-electrostatics-for-polar-materials" title="Link to this heading"></a></h1>
+<p><strong>py-electrostatic</strong> is a Python package for computing long-range electrostatic interactions in polar materials using Born effective charges and dielectric tensors. It integrates seamlessly with ASE (Atomic Simulation Environment) and can be combined with other calculators for machine learning potentials, DFT, and more.</p>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Born Effective Charges</strong>: Uses proper Born effective charge tensors for accurate polar interactions</p></li>
+<li><p><strong>Ewald Summation</strong>: Efficient k-space summation with automatic convergence handling</p></li>
+<li><p><strong>NUFFT Acceleration</strong>: Optional Non-Uniform FFT for O(N²) scaling (vs O(N³) standard)</p></li>
+<li><p><strong>ASE Integration</strong>: Full compatibility with ASE calculators for MD, optimization, and more</p></li>
+<li><p><strong>SSCHA Integration</strong>: Works with the Stochastic Self-Consistent Harmonic Approximation code</p></li>
+<li><p><strong>Julia Acceleration</strong>: High-performance Julia backend for stress tensors and fast evaluation</p></li>
+</ul>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyelectrostatic.calculator</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">calc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cellconstructor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">CC</span>
+
+<span class="c1"># Load structure with effective charges</span>
+<span class="n">dyn</span> <span class="o">=</span> <span class="n">CC</span><span class="o">.</span><span class="n">Phonons</span><span class="o">.</span><span class="n">Phonons</span><span class="p">(</span><span class="s2">&quot;BaTiO3_&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize calculator</span>
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">ElectrostaticCalculator</span><span class="p">()</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="n">calculator</span><span class="o">.</span><span class="n">init_from_phonons</span><span class="p">(</span><span class="n">dyn</span><span class="p">)</span>
+
+<span class="c1"># Compute energy and forces</span>
+<span class="n">atm</span> <span class="o">=</span> <span class="n">dyn</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">get_ase_atoms</span><span class="p">()</span>
+<span class="n">atm</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calculator</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span>
+<span class="n">forces</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="documentation-contents">
+<h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html#basic-installation">Basic Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html#julia-installation-recommended">Julia Installation (Recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html#verification">Verification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/installation.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/theory_minimal.html">Minimal Theory Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#the-problem">The Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#born-effective-charges">Born Effective Charges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#dielectric-tensor">Dielectric Tensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#ewald-summation">Ewald Summation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#key-parameters">Key Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#where-to-get-parameters">Where to Get Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/theory_minimal.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/parameters.html">Parameter Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/parameters.html#electrostaticcalculator-parameters">ElectrostaticCalculator Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/parameters.html#convergence-checking">Convergence Checking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/parameters.html#recommended-starting-values">Recommended Starting Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/parameters.html#common-issues">Common Issues</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/index.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/index.html#tutorial-overview">Tutorial Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/index.html#example-files">Example Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/index.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/01_getting_started.html">Tutorial 1: Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#step-1-load-structure">Step 1: Load Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#step-2-initialize-calculator">Step 2: Initialize Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#step-3-compute-energy-and-forces">Step 3: Compute Energy and Forces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/02_supercell_calculations.html">Tutorial 2: Supercell Calculations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_supercell_calculations.html#step-1-generate-supercell">Step 1: Generate Supercell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_supercell_calculations.html#step-2-initialize-for-supercell">Step 2: Initialize for Supercell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_supercell_calculations.html#step-3-verify-energy-consistency">Step 3: Verify Energy Consistency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_supercell_calculations.html#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_supercell_calculations.html#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/03_composite_calculator.html">Tutorial 3: Composite Calculator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_composite_calculator.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_composite_calculator.html#example-with-fake-calculator">Example with Fake Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_composite_calculator.html#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_composite_calculator.html#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html">Tutorial 4: SSCHA with Electrostatics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html#sscha-calculation">SSCHA Calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_sscha_electrostatic.html#running">Running</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_reference/index.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/index.html#main-module-calculator">Main Module: calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/index.html#module-pyelectrostatic.utils">Utilities Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/index.html#module-pyelectrostatic.interface">Interface Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="citations.html#bibtex">BibTeX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="citations.html#software-dependencies">Software Dependencies</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<p>If you use py-electrostatic in your research, please cite:</p>
+<ol class="upperalpha simple" start="12">
+<li><p>Monacelli and N. Marzari, <em>Electrostatic interactions in atomistic and machine-learned potentials for polar materials</em>, Phys. Rev. B 113, 094101 (2026).</p></li>
+</ol>
+<p>See the <a class="reference internal" href="citations.html"><span class="doc">Citations</span></a> page for full citation information and BibTeX.</p>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="user_guide/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lorenzo Monacelli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
